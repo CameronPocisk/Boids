@@ -10,3 +10,7 @@ Wallpaper engine supports interactive webpages (javascript!) as desktops.
 Helpful doc for html canvas https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API
 openGL is a state machine -- from (https://youtu.be/kB0ZVUrI4Aw?si=XxpGntDI3RzrBVSu&t=149)
 Using webGL https://www.youtube.com/playlist?list=PL2935W76vRNHFpPUuqmLoGCzwx_8eq5yK
+
+
+SISIIIIIKKKKKKKEEEEEE
+I hate webGL use html5 canvas instead https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Basic_usage

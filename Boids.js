@@ -4,8 +4,9 @@ const alignment = false;
 const cohesion = false;
 
 const vertexData = [
-  0, 1, 0,
-  1, -1, 0,
+// x   y  
+   0,  1, 0,
+   1, -1, 0,
   -1, -1, 0,
 ];
 class Boid{
@@ -44,7 +45,7 @@ class Boid{
 
 function main(){
 
-  const canvas = document.querySelector('canvas'); // const canvas = document.getElementById('boidPlane');
+  const canvas = document.getElementById('boidPlane'); // const canvas = document.querySelector('canvas'); 
   const gl = canvas.getContext('webgl');
 
   if (!gl){
@@ -61,7 +62,7 @@ function main(){
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW) // loads data into the array buffer and how often we redraw
 
   // creating vertex shader
-  const vertexShader = gl.createShader(gl.VERTEX_SHADER); // A shader is like a mini program and it needs some code to run
+  const vertexShader = gl.createShader(gl. VERTEX_SHADER); // A shader is like a mini program and it needs some code to run
   gl.shaderSource(vertexShader, `
   attribute vec3 position;
   void main() {
@@ -72,7 +73,7 @@ function main(){
 
 
   // creating fragment shader
-  const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+  const fragmentShader = gl.createShader(gl. FRAGMENT_SHADER);
   gl.shaderSource(fragmentShader, `
   void main() {
     gl_FragColor = vec4(.8, .75, .60, 1);
@@ -94,10 +95,11 @@ function main(){
   gl.useProgram(program); // will create the executable program on the GPU
   gl.drawArrays(gl.TRIANGLES, 0, 3);
 
+
+
   const firstBoid = new Boid(25);
   firstBoid.xPosition = 6; // Public??????
   console.log(firstBoid.xPosition);
-
 }
 
 main();
