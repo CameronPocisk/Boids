@@ -4,12 +4,13 @@
 const FrameRateInMsec = 1/60;
 var BoidHeight = window.innerHeight / 8; // Var bc I think these will have to be plastic
 var boidWidth = window.innerWidth / 30;
+const numBoids = 2;
 // bools for - seperation, allignment, cohesion, WrapAround
 const canvas = document.getElementById("boidPlane");
 const context = canvas.getContext("2d");
 
 function SetupCanvas(){
-    console.log("Goodbye world");
+    console.log("Running Program");
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -18,7 +19,7 @@ function SetupCanvas(){
 }
 
 function ReportWindowSize(){
-    BoidHeight = window.innerHeight / 4;
+    BoidHeight = window.innerHeight / numBoids;
     boidWidth = window.innerWidth / 15;
 }
 function RandomNumberBetween(min, max){
@@ -27,22 +28,17 @@ function RandomNumberBetween(min, max){
 }
 
 class Boid{
-
+    xPosition; // These represent the Center of the boid
+    yPosition;
+    velocity;
     angle; // Radians looooool (for Math)
-    firstXPoint;
+
+    firstXPoint; // Triangle things
     firstYPoint;
     secondXPoint;
     secondYPoint;
     thirdXPoint;
     thirdYPoint;
-
-    xPosition = window.width / 2; // These represent the Center of the boid
-    yPosition = window.height / 2; // Starts at the center of screen by default
-
-    velocity;
-    // Used to save space and time but always derived from velocity
-    xVelocity; 
-    yVelocity;
 
     constructor(xPosInp, yPosInp, velocityInp, angleInp) {
         this.xPosition = xPosInp;
@@ -61,7 +57,7 @@ class Boid{
         context.fill();
     }
 
-    CheckForOutOffCanvas(){
+    CheckForOutOfBounds(){
         if(this.xPosition > window.innerWidth){
             this.xPosition = 0;
         }
@@ -69,6 +65,7 @@ class Boid{
         {
             this.xPosition = window.innerWidth
         }
+
         if(this.yPosition > window.innerHeight){
             this.yPosition = 0;
         }
@@ -80,6 +77,7 @@ class Boid{
 
     UpdateTriangleCoordinates()
     {   // Math for drawing an isocolese triangle from its center given its X, Y, Base, Height, Angle.
+        // Worth performance wise to save sin and cos' as vars? (5 each per frame) (Do Later)
         this.firstXPoint = this.xPosition + (Math.cos(this.angle) * BoidHeight * 1/2);
         this.firstYPoint = this.yPosition + (Math.sin(this.angle) * BoidHeight * 1/2);
         this.secondXPoint= this.xPosition + (-1/2 * ((Math.cos(this.angle) * BoidHeight) - (Math.sin(this.angle) * boidWidth)));
@@ -88,23 +86,17 @@ class Boid{
         this.thirdYPoint = this.yPosition + (-1/2 * ((Math.sin(this.angle) * BoidHeight) - (Math.cos(this.angle) * boidWidth)));
     }
 
-    GetVelocityComponents()
-    {
-        this.xVelocity = Math.cos(this.angle) * this.velocity;
-        this.yVelocity = Math.sin(this.angle) * this.velocity;
-    }
-
     MoveWithVelocity()
     {
-        this.xPosition += this.xVelocity;
-        this.yPosition += this.yVelocity;
+        this.xPosition += Math.cos(this.angle) * this.velocity;
+        this.yPosition += Math.sin(this.angle) * this.velocity;
     }
 
     Update()
     {
-        this.GetVelocityComponents();
+        
         this.MoveWithVelocity();
-        this.CheckForOutOffCanvas();
+        this.CheckForOutOfBounds();
         this.UpdateTriangleCoordinates();
         this.DrawBoid();
     }
@@ -113,36 +105,34 @@ class Boid{
 function main()
 {
     SetupCanvas();
-    window.addEventListener("resize", ReportWindowSize);
 
+    // Initialize boids
     const aFewBoids = []
-    for(let i = 0; i < 4; i++){
+    for(let i = 0; i < numBoids; i++){
         aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
         RandomNumberBetween(0, window.innerHeight),
-        RandomNumberBetween(2, 6), 
+        RandomNumberBetween(2, 6),
         Math.PI/2));
     }
-    const firstBoid = new Boid(window.innerWidth/2, window.innerHeight/2, 5, Math.PI/2);
     var frameCount = 0
     setInterval(() => {
-        context.clearRect(0, 0, canvas.width, canvas.height); // Move this outside of class, This has to happen upon each 'frame'
+        context.clearRect(0, 0, canvas.width, canvas.height); // Clear frame so you can draw on it
         if(frameCount >= 60){
             frameCount = 0
         }
         frameCount++
         
-        if(frameCount % 5 == 0){   
-            for(let i = 0; i < 4; i++){
-                aFewBoids[i].angle += RandomNumberBetween(-.08, .08);
-            }
+        for(let i = 0; i < numBoids; i++){ // Move into class?
+            aFewBoids[i].angle += RandomNumberBetween(-.02, .02);
         }
-
-        for(let i = 0; i < 4; i++){
+        
+        // Do a majority of the work for boid updating
+        for(let i = 0; i < numBoids; i++){
             aFewBoids[i].Update();
-            // console.log(aFewBoids[i].angle);
         }
 
-        // firstBoid.Update();
+        // In html put fiun bkg behind canvas?
+
         console.log("thing happened on frame :" + frameCount);
     }, FrameRateInMsec);
 }
