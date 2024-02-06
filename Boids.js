@@ -8,8 +8,17 @@ var boidWidth = window.innerWidth / 30;
 const canvas = document.getElementById("boidPlane");
 const context = canvas.getContext("2d");
 
+function SetupCanvas(){
+    console.log("Goodbye world");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.border = "1px solid #FF0000";
+    window.addEventListener("resize", ReportWindowSize);
+}
+
 function ReportWindowSize(){
-    BoidHeight = window.innerHeight /4;
+    BoidHeight = window.innerHeight / 4;
     boidWidth = window.innerWidth / 15;
 }
 function RandomNumberBetween(min, max){
@@ -52,6 +61,23 @@ class Boid{
         context.fill();
     }
 
+    CheckForOutOffCanvas(){
+        if(this.xPosition > window.innerWidth){
+            this.xPosition = 0;
+        }
+        else if(this.xPosition < 0)
+        {
+            this.xPosition = window.innerWidth
+        }
+        if(this.yPosition > window.innerHeight){
+            this.yPosition = 0;
+        }
+        else if(this.yPosition < 0)
+        {
+            this.yPosition = window.innerHeight
+        }
+    }
+
     UpdateTriangleCoordinates()
     {   // Math for drawing an isocolese triangle from its center given its X, Y, Base, Height, Angle.
         this.firstXPoint = this.xPosition + (Math.cos(this.angle) * BoidHeight * 1/2);
@@ -78,6 +104,7 @@ class Boid{
     {
         this.GetVelocityComponents();
         this.MoveWithVelocity();
+        this.CheckForOutOffCanvas();
         this.UpdateTriangleCoordinates();
         this.DrawBoid();
     }
@@ -85,45 +112,38 @@ class Boid{
 
 function main()
 {
-    console.log("hello world");
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    canvas.style.border = "1px solid #FF0000";
+    SetupCanvas();
     window.addEventListener("resize", ReportWindowSize);
 
+    const aFewBoids = []
+    for(let i = 0; i < 4; i++){
+        aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
+        RandomNumberBetween(0, window.innerHeight),
+        RandomNumberBetween(2, 6), 
+        Math.PI/2));
+    }
     const firstBoid = new Boid(window.innerWidth/2, window.innerHeight/2, 5, Math.PI/2);
-    frameCount = 0
+    var frameCount = 0
     setInterval(() => {
+        context.clearRect(0, 0, canvas.width, canvas.height); // Move this outside of class, This has to happen upon each 'frame'
         if(frameCount >= 60){
             frameCount = 0
         }
         frameCount++
-        context.clearRect(0, 0, canvas.width, canvas.height); // Move this outside of class, This has to happen upon each 'frame'
         
         if(frameCount % 5 == 0){   
-            firstBoid.angle += RandomNumberBetween(-.08, .08);
+            for(let i = 0; i < 4; i++){
+                aFewBoids[i] += RandomNumberBetween(-.08, .08);
+            }
         }
 
-
-        if(firstBoid.xPosition > window.innerWidth){
-            firstBoid.xPosition = 0;
-        }
-        else if(firstBoid.xPosition < 0)
-        {
-            firstBoid.xPosition = window.innerWidth
-        }
-        if(firstBoid.yPosition > window.innerHeight){
-            firstBoid.yPosition = 0;
-        }
-        else if(firstBoid.yPosition < 0)
-        {
-            firstBoid.yPosition = window.innerHeight
+        for(let i = 0; i < 4; i++){
+            // aFewBoids[i].Update();
+            console.log(aFewBoids[i].angle);
         }
 
-        firstBoid.Update();
-        console.log("thing happened");
-        console.log(frameCount);
+        // firstBoid.Update();
+        console.log("thing happened on frame :" + frameCount);
     }, FrameRateInMsec);
 }
 
