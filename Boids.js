@@ -133,13 +133,13 @@ function main()
         
         if(frameCount % 5 == 0){   
             for(let i = 0; i < 4; i++){
-                aFewBoids[i] += RandomNumberBetween(-.08, .08);
+                aFewBoids[i].angle += RandomNumberBetween(-.08, .08);
             }
         }
 
         for(let i = 0; i < 4; i++){
-            // aFewBoids[i].Update();
-            console.log(aFewBoids[i].angle);
+            aFewBoids[i].Update();
+            // console.log(aFewBoids[i].angle);
         }
 
         // firstBoid.Update();
