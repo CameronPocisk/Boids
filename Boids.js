@@ -1,18 +1,21 @@
 // Made by Cameron Pocisk and Cristian Leyva
 
 // Globals and Constants
-const FrameRateInMsec = Math.floor(1/60);
+const FrameRateInMsec = 1/60;
 var BoidHeight = window.innerHeight / 8; // Var bc I think these will have to be plastic
 var boidWidth = window.innerWidth / 30;
 // bools for - seperation, allignment, cohesion, WrapAround
 const canvas = document.getElementById("boidPlane");
 const context = canvas.getContext("2d");
 
-function reportWindowSize() {
+function ReportWindowSize(){
     BoidHeight = window.innerHeight /4;
     boidWidth = window.innerWidth / 15;
 }
-
+function RandomNumberBetween(min, max){
+    range = max - min;
+    return max - Math.random() * range;
+}
 
 class Boid{
 
@@ -87,13 +90,21 @@ function main()
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     canvas.style.border = "1px solid #FF0000";
-    window.addEventListener("resize", reportWindowSize);
+    window.addEventListener("resize", ReportWindowSize);
 
     const firstBoid = new Boid(window.innerWidth/2, window.innerHeight/2, 5, Math.PI/2);
+    frameCount = 0
     setInterval(() => {
+        if(frameCount >= 60){
+            frameCount = 0
+        }
+        frameCount++
         context.clearRect(0, 0, canvas.width, canvas.height); // Move this outside of class, This has to happen upon each 'frame'
         
-        firstBoid.angle += Math.random() / 10;
+        if(frameCount % 5 == 0){   
+            firstBoid.angle += RandomNumberBetween(-.08, .08);
+        }
+
 
         if(firstBoid.xPosition > window.innerWidth){
             firstBoid.xPosition = 0;
@@ -112,6 +123,7 @@ function main()
 
         firstBoid.Update();
         console.log("thing happened");
+        console.log(frameCount);
     }, FrameRateInMsec);
 }
 
