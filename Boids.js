@@ -1,15 +1,18 @@
 // Made by Cameron Pocisk and Cristian Leyva
 
-// Globals and Constants
-const FrameRateInMsec = (1/60) * 1000;
-var BoidHeight = window.innerHeight / 16; // Var bc I think these will have to be plastic
-var boidWidth = window.innerWidth / 60;
-const numBoids = 5;
-var mouseXPosition = 0;
-var mouseYPosition = 0;
-// bools for - seperation, allignment, cohesion, WrapAround
+// Globals From HTML
 const canvas = document.getElementById("boidPlane");
 const context = canvas.getContext("2d");
+var mouseXPosition = 0;
+var mouseYPosition = 0;
+
+//Helpful constants
+const FrameRateInMsec = (1/60) * 1000;
+const numBoids = 15;
+
+var BoidHeight = window.innerHeight / 16; // Var bc I think these will have to be plastic
+var boidWidth = window.innerWidth / 60;
+// bools for - seperation, allignment, cohesion, WrapAround?
 
 function SetupCanvas(){
     console.log("Running Program");
@@ -21,8 +24,8 @@ function SetupCanvas(){
 }
 
 function ReportWindowSize(){
-    BoidHeight = window.innerHeight / 8;
-    boidWidth = window.innerWidth / 15;
+    BoidHeight = window.innerWidth / 8;
+    boidWidth = window.innerHeight / 15;
 }
 function UpdateMouseCoords(event) {
     mouseXPosition = event.clientX;
@@ -30,12 +33,11 @@ function UpdateMouseCoords(event) {
  }
 
 function RandomNumberBetween(min, max){
-    range = max - min;
-    return max - Math.random() * range;
+    return min + Math.random() * (max - min);
 }
 
 class Boid{
-    xPosition; // These represent the Center of the boid
+    xPosition;
     yPosition;
     velocity;
     angle; // Radians looooool (for Math)
@@ -118,40 +120,34 @@ class Boid{
         const relativeXPosition = mouseXPosition - this.xPosition;
         const relativeYPosition = -1*(mouseYPosition - this.yPosition);
         var angleFromBoid = Math.atan(relativeYPosition / relativeXPosition);
+
         if (relativeXPosition < 0){ // Handle weird Arctangent outputs
             angleFromBoid += Math.PI;
         }
         else if(relativeYPosition < 0){ // 4th quad will range from 270 - 360 with this
             angleFromBoid += Math.PI*2;
         }
+        // console.log("Boid in deg: " + this.angle * 180 / Math.PI); console.log("Angle from : " + angleFromBoid * 180 / Math.PI);
+        // console.log("Boid in deg: " + (360 -(this.angle * 180 / Math.PI)));
+        var trueAngle = 2*Math.PI - this.angle; // Angle is reversed so
 
-        // Everything below here is tweaky
-        // console.log("Boid in deg: " + this.angle * 180 / Math.PI);
-        console.log("Boid in deg: " + (360 -(this.angle * 180 / Math.PI)));
-        var trueAngle = 2*Math.PI - this.angle;
-        // console.log("Angle from : " + angleFromBoid * 180 / Math.PI);
-
-        // This kinda works
-        // if(trueAngle - angleFromBoid < 0){
-        if(angleFromBoid > trueAngle || (angleFromBoid < trueAngle - Math.PI || angleFromBoid > trueAngle + Math.PI) ){
-            this.angle -= .05;
-            console.log("left");
+        if((angleFromBoid > trueAngle && angleFromBoid < trueAngle + Math.PI) || angleFromBoid < trueAngle - Math.PI){
+            this.angle -= .05; // Turn left
         }
         else{
-            this.angle += .05;
-            console.log("right");
+            this.angle += .05; // Turn right
         }
-        // Add cursor positions here.
-        // event.clientX;  // Horizontal
     }
 
     Update()
     {
+        //First calculations 
+        this.CalculateTrigAngleFactors();
+        
         // Handle angle
         this.MoveTowardsCursor();
 
         // Handle Movement
-        this.CalculateTrigAngleFactors();
         this.MoveWithVelocity();
         this.CheckForOutOfBounds();
         
@@ -171,7 +167,7 @@ function main()
     for(let i = 0; i < numBoids; i++){
         aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
         RandomNumberBetween(0, window.innerHeight),
-        RandomNumberBetween(2, 3),
+        RandomNumberBetween(7, 8),
         Math.PI/2));
     }
     // for(let i = 0; i < numBoids; i++){
@@ -180,12 +176,7 @@ function main()
     //     RandomNumberBetween(0, 0),
     //     Math.PI/2));
     // }
-    // for(let i = 0; i < numBoids; i++){
-    //     aFewBoids.push(new Boid(window.innerWidth/5, 
-    //     window.innerHeight/5,
-    //     RandomNumberBetween(0, 0),
-    //     0));
-    // }
+
     var frameCount = 0
     setInterval(() => {
         context.clearRect(0, 0, canvas.width, canvas.height);
@@ -194,11 +185,11 @@ function main()
         }
         frameCount++
         
-        // for(let i = 0; i < numBoids; i++){ // Move into class?
-            // // aFewBoids[i].angle += RandomNumberBetween(-.02, .02);
+        for(let i = 0; i < numBoids; i++){ // Move into class?
+            aFewBoids[i].angle += RandomNumberBetween(-.02, .02);
             // aFewBoids[i].angle -= .05;
-        // }
-        // console.log(aFewBoids[0].angle);
+        }
+        console.log(aFewBoids[0].angle);
         
         // Do a majority of the work for boid updating
         for(let i = 0; i < numBoids; i++){
