@@ -8,7 +8,7 @@ var mouseYPosition = 0;
 
 //Helpful constants
 const FrameRateInMsec = (1/60) * 1000;
-const numBoids = 1;
+const numBoids = 20;
 
 var BoidHeight = window.innerHeight / 16; // Var bc I think these will have to be plastic
 var boidWidth = window.innerWidth / 60;
@@ -110,7 +110,7 @@ class Boid{
     MoveWithVelocity()
     {
         this.xPosition += this.cosOfBoidAngle * this.velocity;
-        this.yPosition += this.sinOfBoidAngle * this.velocity;
+        this.yPosition -= this.sinOfBoidAngle * this.velocity;
     }
 
     MoveTowardsCursor()
@@ -126,7 +126,6 @@ class Boid{
             angleFromBoid += Math.PI*2;
         }
         // console.log("Boid in deg: " + this.angle * 180 / Math.PI); console.log("Angle from : " + angleFromBoid * 180 / Math.PI);
-        // console.log("Boid in deg: " + (360 -(this.angle * 180 / Math.PI)));
         if((angleFromBoid > this.angle && angleFromBoid < this.angle + Math.PI) || angleFromBoid < this.angle - Math.PI){
             this.angle += .05; // Turn left
         }
@@ -135,13 +134,18 @@ class Boid{
         }
     }
 
+    RandomAngleChange(){
+        this.angle += RandomNumberBetween(-.05, .05);
+    }
+
     Update()
     {
         //First calculations 
         this.CalculateTrigAngleFactors();
         
         // Handle angle
-        this.MoveTowardsCursor();
+        this.MoveTowardsCursor(); // Add fun thing for mouse off screen?
+        // this.RandomAngleChange();
 
         // Handle Movement
         this.MoveWithVelocity();
@@ -160,19 +164,21 @@ function main()
 
     // Initialize boids
     const aFewBoids = []
-    // for(let i = 0; i < numBoids; i++){
-    //     aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
-    //     RandomNumberBetween(0, window.innerHeight),
-    //     RandomNumberBetween(7, 8),
-    //     Math.PI/2));
-    // }
+    
     for(let i = 0; i < numBoids; i++){
-        aFewBoids.push(new Boid(window.innerWidth/2, 
-        window.innerHeight/2,
-        RandomNumberBetween(0, 0),
+        aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
+        RandomNumberBetween(0, window.innerHeight),
+        RandomNumberBetween(7, 8),
         Math.PI/2));
     }
+    // for(let i = 0; i < numBoids; i++){
+    //     aFewBoids.push(new Boid(window.innerWidth/2, 
+    //     window.innerHeight/2,
+    //     RandomNumberBetween(0, 0),
+    //     Math.PI/2));
+    // }
 
+    // Start main loop
     var frameCount = 0
     setInterval(() => {
         context.clearRect(0, 0, canvas.width, canvas.height);
@@ -181,16 +187,9 @@ function main()
         }
         frameCount++
         
-        for(let i = 0; i < numBoids; i++){ // Move into class?
-            aFewBoids[i].angle += RandomNumberBetween(-.02, .02);
-            // aFewBoids[i].angle -= .05;
-        }
-        console.log(aFewBoids[0].angle);
-        
         // Do a majority of the work for boid updating
         for(let i = 0; i < numBoids; i++){
             aFewBoids[i].Update();
-            console.log(aFewBoids[0].angle * 180 / Math.PI);
         }
 
         // console.log("Ran frame: " + frameCount);
