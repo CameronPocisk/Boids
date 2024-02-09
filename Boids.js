@@ -1,36 +1,41 @@
 // Made by Cameron Pocisk and Cristian Leyva
 
-// Globals From HTML
+// Globals from HTML fncalls
 const canvas = document.getElementById("boidPlane");
 const context = canvas.getContext("2d");
 var mouseXPosition = 0;
 var mouseYPosition = 0;
 
-//Helpful constants
+// Helpful constants
 const FrameRateInMsec = (1/60) * 1000;
 const numBoids = 20;
 
-var BoidHeight = window.innerHeight / 16; // Var bc I think these will have to be plastic
+var BoidHeight = window.innerHeight / 16;
 var boidWidth = window.innerWidth / 60;
 // bools for - seperation, allignment, cohesion, WrapAround?
 
+function StartProgram(){
+    main(); // Happens here so everthing starts once loaded. Helps with sizing and potential bugs
+}
+
+function ReportWindowSize(){
+    BoidHeight = window.innerWidth / 20;
+    boidWidth = window.innerHeight / 30;
+}
+function UpdateMouseCoords(event) {
+    mouseXPosition = event.clientX;
+    mouseYPosition = event.clientY;
+}
+
 function SetupCanvas(){
-    console.log("Running Program");
+    console.log("Running Program (Hello Boids)");
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     // canvas.style.border = "1px solid #FF0000";
     window.addEventListener("resize", ReportWindowSize);
+    ReportWindowSize();
 }
-
-function ReportWindowSize(){
-    BoidHeight = window.innerWidth / 8;
-    boidWidth = window.innerHeight / 15;
-}
-function UpdateMouseCoords(event) {
-    mouseXPosition = event.clientX;
-    mouseYPosition = event.clientY;
- }
 
 function RandomNumberBetween(min, max){
     return min + Math.random() * (max - min);
@@ -75,7 +80,7 @@ class Boid{
         }
         else if(this.xPosition < 0)
         {
-            this.xPosition = window.innerWidth
+            this.xPosition = window.innerWidth;
         }
 
         if(this.yPosition > window.innerHeight){
@@ -83,7 +88,7 @@ class Boid{
         }
         else if(this.yPosition < 0)
         {
-            this.yPosition = window.innerHeight
+            this.yPosition = window.innerHeight;
         }
     }
 
@@ -135,7 +140,7 @@ class Boid{
     }
 
     RandomAngleChange(){
-        this.angle += RandomNumberBetween(-.05, .05);
+        this.angle += RandomNumberBetween(-.1, .1);
     }
 
     Update()
@@ -163,8 +168,8 @@ function main()
     SetupCanvas();
 
     // Initialize boids
-    const aFewBoids = []
-    
+    const aFewBoids = [];
+
     for(let i = 0; i < numBoids; i++){
         aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
         RandomNumberBetween(0, window.innerHeight),
@@ -179,13 +184,13 @@ function main()
     // }
 
     // Start main loop
-    var frameCount = 0
+    var frameCount = 0;
     setInterval(() => {
         context.clearRect(0, 0, canvas.width, canvas.height);
         if(frameCount >= 60){
-            frameCount = 0
+            frameCount = 0;
         }
-        frameCount++
+        frameCount++;
         
         // Do a majority of the work for boid updating
         for(let i = 0; i < numBoids; i++){
@@ -196,4 +201,4 @@ function main()
     }, FrameRateInMsec);
 }
 
-main();
+window.addEventListener("load", StartProgram);
