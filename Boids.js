@@ -4,7 +4,7 @@
 const FrameRateInMsec = (1/60) * 1000;
 var BoidHeight = window.innerHeight / 16; // Var bc I think these will have to be plastic
 var boidWidth = window.innerWidth / 60;
-const numBoids = 1;
+const numBoids = 5;
 var mouseXPosition = 0;
 var mouseYPosition = 0;
 // bools for - seperation, allignment, cohesion, WrapAround
@@ -39,8 +39,8 @@ class Boid{
     yPosition;
     velocity;
     angle; // Radians looooool (for Math)
-    sinVelocityFactor;
-    cosVelocityFactor;
+    sinOfBoidAngle;
+    cosOfBoidAngle;
 
     firstXPoint; // Triangle things
     firstYPoint;
@@ -87,33 +87,38 @@ class Boid{
 
     CalculateTrigAngleFactors()
     {
-        this.sinVelocityFactor = Math.sin(this.angle);
-        this.cosVelocityFactor = Math.cos(this.angle);
+        if(this.angle < 0){ // Needed?
+            this.angle += 2 * Math.PI;
+        }
+        this.angle %= 2 * Math.PI; // make sure spins dont affect point
+        this.sinOfBoidAngle = Math.sin(this.angle);
+        this.cosOfBoidAngle = Math.cos(this.angle);
     }
 
     UpdateTriangleCoordinates()
     {   // Math for drawing an isocolese triangle from its center given its X, Y, Base, Height, Angle.
         // Worth performance wise to save sin and cos' as vars? (5 each per frame) (Do Later)
-        this.firstXPoint = this.xPosition + (this.cosVelocityFactor * BoidHeight * 1/2);
-        this.firstYPoint = this.yPosition + (this.sinVelocityFactor * BoidHeight * 1/2);
-        this.secondXPoint= this.xPosition + (-1/2 * ((this.cosVelocityFactor * BoidHeight) - this.sinVelocityFactor * boidWidth));
-        this.secondYPoint= this.yPosition + (-1/2 * ((this.sinVelocityFactor * BoidHeight) + this.cosVelocityFactor * boidWidth));
-        this.thirdXPoint = this.xPosition + (-1/2 * ((this.cosVelocityFactor * BoidHeight) + this.sinVelocityFactor * boidWidth));
-        this.thirdYPoint = this.yPosition + (-1/2 * ((this.sinVelocityFactor * BoidHeight) - this.cosVelocityFactor * boidWidth));
+        // Is this the reason that the angle turns the boid opposite of angle?
+        this.firstXPoint = this.xPosition + (this.cosOfBoidAngle * BoidHeight * 1/2);
+        this.firstYPoint = this.yPosition + (this.sinOfBoidAngle * BoidHeight * 1/2);
+        this.secondXPoint= this.xPosition + (-1/2 * ((this.cosOfBoidAngle * BoidHeight) - this.sinOfBoidAngle * boidWidth));
+        this.secondYPoint= this.yPosition + (-1/2 * ((this.sinOfBoidAngle * BoidHeight) + this.cosOfBoidAngle * boidWidth));
+        this.thirdXPoint = this.xPosition + (-1/2 * ((this.cosOfBoidAngle * BoidHeight) + this.sinOfBoidAngle * boidWidth));
+        this.thirdYPoint = this.yPosition + (-1/2 * ((this.sinOfBoidAngle * BoidHeight) - this.cosOfBoidAngle * boidWidth));
     }
 
     MoveWithVelocity()
     {
-        this.xPosition += this.cosVelocityFactor * this.velocity;
-        this.yPosition += this.sinVelocityFactor * this.velocity;
+        this.xPosition += this.cosOfBoidAngle * this.velocity;
+        this.yPosition += this.sinOfBoidAngle * this.velocity;
     }
 
     MoveTowardsCursor()
     {
         const relativeXPosition = mouseXPosition - this.xPosition;
-        const relativeYPosition = -1 * (mouseYPosition - this.yPosition);
+        const relativeYPosition = -1*(mouseYPosition - this.yPosition);
         var angleFromBoid = Math.atan(relativeYPosition / relativeXPosition);
-        if (relativeXPosition < 0){
+        if (relativeXPosition < 0){ // Handle weird Arctangent outputs
             angleFromBoid += Math.PI;
         }
         else if(relativeYPosition < 0){ // 4th quad will range from 270 - 360 with this
@@ -121,16 +126,20 @@ class Boid{
         }
 
         // Everything below here is tweaky
-        console.log("Boid in deg: " + this.angle * 180 / Math.PI);
-        this.angle %= 2 * Math.PI; // make sure spins dont affect point
+        // console.log("Boid in deg: " + this.angle * 180 / Math.PI);
+        console.log("Boid in deg: " + (360 -(this.angle * 180 / Math.PI)));
+        var trueAngle = 2*Math.PI - this.angle;
+        // console.log("Angle from : " + angleFromBoid * 180 / Math.PI);
 
-        if(this.angle > angleFromBoid){
+        // This kinda works
+        // if(trueAngle - angleFromBoid < 0){
+        if(angleFromBoid > trueAngle || (angleFromBoid < trueAngle - Math.PI || angleFromBoid > trueAngle + Math.PI) ){
             this.angle -= .05;
-            console.log("Right");
+            console.log("left");
         }
         else{
             this.angle += .05;
-            console.log("Left");
+            console.log("right");
         }
         // Add cursor positions here.
         // event.clientX;  // Horizontal
@@ -159,43 +168,44 @@ function main()
 
     // Initialize boids
     const aFewBoids = []
-    // for(let i = 0; i < numBoids; i++){
-    //     aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
-    //     RandomNumberBetween(0, window.innerHeight),
-    //     RandomNumberBetween(2, 3),
-    //     Math.PI/2));
-    // }
+    for(let i = 0; i < numBoids; i++){
+        aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
+        RandomNumberBetween(0, window.innerHeight),
+        RandomNumberBetween(2, 3),
+        Math.PI/2));
+    }
     // for(let i = 0; i < numBoids; i++){
     //     aFewBoids.push(new Boid(window.innerWidth/2, 
     //     window.innerHeight/2,
     //     RandomNumberBetween(0, 0),
     //     Math.PI/2));
     // }
-    for(let i = 0; i < numBoids; i++){
-        aFewBoids.push(new Boid(window.innerWidth/5, 
-        window.innerHeight/5,
-        RandomNumberBetween(0, 0),
-        0));
-    }
-    // aFewBoids[0].angle += Math.PI;
+    // for(let i = 0; i < numBoids; i++){
+    //     aFewBoids.push(new Boid(window.innerWidth/5, 
+    //     window.innerHeight/5,
+    //     RandomNumberBetween(0, 0),
+    //     0));
+    // }
     var frameCount = 0
     setInterval(() => {
-        context.clearRect(0, 0, canvas.width, canvas.height); // Clear frame so you can draw on it
+        context.clearRect(0, 0, canvas.width, canvas.height);
         if(frameCount >= 60){
             frameCount = 0
         }
         frameCount++
         
         // for(let i = 0; i < numBoids; i++){ // Move into class?
-        //     aFewBoids[i].angle += RandomNumberBetween(-.02, .02);
+            // // aFewBoids[i].angle += RandomNumberBetween(-.02, .02);
+            // aFewBoids[i].angle -= .05;
         // }
+        // console.log(aFewBoids[0].angle);
         
         // Do a majority of the work for boid updating
         for(let i = 0; i < numBoids; i++){
             aFewBoids[i].Update();
         }
 
-        // console.log("thing happened on frame :" + frameCount);
+        // console.log("Ran frame: " + frameCount);
     }, FrameRateInMsec);
 }
 
