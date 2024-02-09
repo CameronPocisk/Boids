@@ -8,7 +8,7 @@ var mouseYPosition = 0;
 
 //Helpful constants
 const FrameRateInMsec = (1/60) * 1000;
-const numBoids = 15;
+const numBoids = 1;
 
 var BoidHeight = window.innerHeight / 16; // Var bc I think these will have to be plastic
 var boidWidth = window.innerWidth / 60;
@@ -98,15 +98,13 @@ class Boid{
     }
 
     UpdateTriangleCoordinates()
-    {   // Math for drawing an isocolese triangle from its center given its X, Y, Base, Height, Angle.
-        // Worth performance wise to save sin and cos' as vars? (5 each per frame) (Do Later)
-        // Is this the reason that the angle turns the boid opposite of angle?
+    {   // Math for drawing an isocolese triangle from its center given its X, Y, Base, Height, Angle. (y acts in neg)
         this.firstXPoint = this.xPosition + (this.cosOfBoidAngle * BoidHeight * 1/2);
-        this.firstYPoint = this.yPosition + (this.sinOfBoidAngle * BoidHeight * 1/2);
+        this.firstYPoint = this.yPosition - (this.sinOfBoidAngle * BoidHeight * 1/2);
         this.secondXPoint= this.xPosition + (-1/2 * ((this.cosOfBoidAngle * BoidHeight) - this.sinOfBoidAngle * boidWidth));
-        this.secondYPoint= this.yPosition + (-1/2 * ((this.sinOfBoidAngle * BoidHeight) + this.cosOfBoidAngle * boidWidth));
+        this.secondYPoint= this.yPosition - (-1/2 * ((this.sinOfBoidAngle * BoidHeight) + this.cosOfBoidAngle * boidWidth));
         this.thirdXPoint = this.xPosition + (-1/2 * ((this.cosOfBoidAngle * BoidHeight) + this.sinOfBoidAngle * boidWidth));
-        this.thirdYPoint = this.yPosition + (-1/2 * ((this.sinOfBoidAngle * BoidHeight) - this.cosOfBoidAngle * boidWidth));
+        this.thirdYPoint = this.yPosition - (-1/2 * ((this.sinOfBoidAngle * BoidHeight) - this.cosOfBoidAngle * boidWidth));
     }
 
     MoveWithVelocity()
@@ -129,13 +127,11 @@ class Boid{
         }
         // console.log("Boid in deg: " + this.angle * 180 / Math.PI); console.log("Angle from : " + angleFromBoid * 180 / Math.PI);
         // console.log("Boid in deg: " + (360 -(this.angle * 180 / Math.PI)));
-        var trueAngle = 2*Math.PI - this.angle; // Angle is reversed so
-
-        if((angleFromBoid > trueAngle && angleFromBoid < trueAngle + Math.PI) || angleFromBoid < trueAngle - Math.PI){
-            this.angle -= .05; // Turn left
+        if((angleFromBoid > this.angle && angleFromBoid < this.angle + Math.PI) || angleFromBoid < this.angle - Math.PI){
+            this.angle += .05; // Turn left
         }
         else{
-            this.angle += .05; // Turn right
+            this.angle -= .05; // Turn right
         }
     }
 
@@ -164,18 +160,18 @@ function main()
 
     // Initialize boids
     const aFewBoids = []
-    for(let i = 0; i < numBoids; i++){
-        aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
-        RandomNumberBetween(0, window.innerHeight),
-        RandomNumberBetween(7, 8),
-        Math.PI/2));
-    }
     // for(let i = 0; i < numBoids; i++){
-    //     aFewBoids.push(new Boid(window.innerWidth/2, 
-    //     window.innerHeight/2,
-    //     RandomNumberBetween(0, 0),
+    //     aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
+    //     RandomNumberBetween(0, window.innerHeight),
+    //     RandomNumberBetween(7, 8),
     //     Math.PI/2));
     // }
+    for(let i = 0; i < numBoids; i++){
+        aFewBoids.push(new Boid(window.innerWidth/2, 
+        window.innerHeight/2,
+        RandomNumberBetween(0, 0),
+        Math.PI/2));
+    }
 
     var frameCount = 0
     setInterval(() => {
@@ -194,6 +190,7 @@ function main()
         // Do a majority of the work for boid updating
         for(let i = 0; i < numBoids; i++){
             aFewBoids[i].Update();
+            console.log(aFewBoids[0].angle * 180 / Math.PI);
         }
 
         // console.log("Ran frame: " + frameCount);
