@@ -10,8 +10,6 @@ var mouseYPosition = 0;
 const FrameRateInMsec = (1/60) * 1000;
 const numBoids = 20;
 
-var BoidHeight = window.innerHeight / 16;
-var boidWidth = window.innerWidth / 60;
 // bools for - seperation, allignment, cohesion, WrapAround?
 
 function StartProgram(){
@@ -19,8 +17,8 @@ function StartProgram(){
 }
 
 function ReportWindowSize(){
-    BoidHeight = window.innerWidth / 20;
-    boidWidth = window.innerHeight / 30;
+    heightOfBoid = window.innerHeight / 15;
+    widthOfBoid = window.innerWidth / 50;
 }
 function UpdateMouseCoords(event) {
     mouseXPosition = event.clientX;
@@ -42,6 +40,10 @@ function RandomNumberBetween(min, max){
 }
 
 class Boid{
+
+    static widthOfBoid;
+    static heightOfBoid;
+
     xPosition;
     yPosition;
     velocity;
@@ -74,29 +76,18 @@ class Boid{
         context.fill();
     }
 
-    CheckForOutOfBounds(){
-        if(this.xPosition > window.innerWidth){
-            this.xPosition = 0;
-        }
-        else if(this.xPosition < 0)
-        {
-            this.xPosition = window.innerWidth;
-        }
-
-        if(this.yPosition > window.innerHeight){
-            this.yPosition = 0;
-        }
-        else if(this.yPosition < 0)
-        {
-            this.yPosition = window.innerHeight;
-        }
+    HandleOutOfBounds(){ // Uses modulous to ensure that it stays within the bounds. works all directoins with plus screenSize and mod
+        this.xPosition = (this.xPosition + window.innerWidth) % window.innerWidth;
+        this.yPosition = (this.yPosition + window.innerHeight) % window.innerHeight;
     }
 
     CalculateTrigAngleFactors()
     {
-        if(this.angle < 0){ // Needed?
-            this.angle += 2 * Math.PI;
-        }
+        // if(this.angle < 0){ // Needed?
+        // this.angle += 2 * Math.PI;
+        // } // look at the line below did i cook.
+        this.angle = (this.angle + 2*Math.PI) % (2*Math.PI);
+
         this.angle %= 2 * Math.PI; // make sure spins dont affect point
         this.sinOfBoidAngle = Math.sin(this.angle);
         this.cosOfBoidAngle = Math.cos(this.angle);
@@ -104,12 +95,12 @@ class Boid{
 
     UpdateTriangleCoordinates()
     {   // Math for drawing an isocolese triangle from its center given its X, Y, Base, Height, Angle. (y acts in neg)
-        this.firstXPoint = this.xPosition + (this.cosOfBoidAngle * BoidHeight * 1/2);
-        this.firstYPoint = this.yPosition - (this.sinOfBoidAngle * BoidHeight * 1/2);
-        this.secondXPoint= this.xPosition + (-1/2 * ((this.cosOfBoidAngle * BoidHeight) - this.sinOfBoidAngle * boidWidth));
-        this.secondYPoint= this.yPosition - (-1/2 * ((this.sinOfBoidAngle * BoidHeight) + this.cosOfBoidAngle * boidWidth));
-        this.thirdXPoint = this.xPosition + (-1/2 * ((this.cosOfBoidAngle * BoidHeight) + this.sinOfBoidAngle * boidWidth));
-        this.thirdYPoint = this.yPosition - (-1/2 * ((this.sinOfBoidAngle * BoidHeight) - this.cosOfBoidAngle * boidWidth));
+        this.firstXPoint = this.xPosition + (this.cosOfBoidAngle * heightOfBoid * 1/2);
+        this.firstYPoint = this.yPosition - (this.sinOfBoidAngle * heightOfBoid * 1/2);
+        this.secondXPoint= this.xPosition + (-1/2 * ((this.cosOfBoidAngle * heightOfBoid) - this.sinOfBoidAngle * widthOfBoid));
+        this.secondYPoint= this.yPosition - (-1/2 * ((this.sinOfBoidAngle * heightOfBoid) + this.cosOfBoidAngle * widthOfBoid));
+        this.thirdXPoint = this.xPosition + (-1/2 * ((this.cosOfBoidAngle * heightOfBoid) + this.sinOfBoidAngle * widthOfBoid));
+        this.thirdYPoint = this.yPosition - (-1/2 * ((this.sinOfBoidAngle * heightOfBoid) - this.cosOfBoidAngle * widthOfBoid));
     }
 
     MoveWithVelocity()
@@ -132,10 +123,10 @@ class Boid{
         }
         // console.log("Boid in deg: " + this.angle * 180 / Math.PI); console.log("Angle from : " + angleFromBoid * 180 / Math.PI);
         if((angleFromBoid > this.angle && angleFromBoid < this.angle + Math.PI) || angleFromBoid < this.angle - Math.PI){
-            this.angle += .05; // Turn left
+            this.angle += .07; // Turn left
         }
         else{
-            this.angle -= .05; // Turn right
+            this.angle -= .07; // Turn right
         }
     }
 
@@ -154,7 +145,7 @@ class Boid{
 
         // Handle Movement
         this.MoveWithVelocity();
-        this.CheckForOutOfBounds();
+        this.HandleOutOfBounds();
         
         // Display Boid
         this.UpdateTriangleCoordinates();
@@ -202,3 +193,4 @@ function main()
 }
 
 window.addEventListener("load", StartProgram);
+
