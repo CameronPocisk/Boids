@@ -45,7 +45,7 @@ function DistanceBetweenPoints(x1, y1, x2, y2){
 
 class Boid{
 
-    static distanceToAvoid = 200;
+    static distanceToAvoid;
     static widthOfBoid;
     static heightOfBoid;
     static FeildOfView = Math.PI // When the boid will scan to find empty space
@@ -69,7 +69,7 @@ class Boid{
         this.yPosition = yPosInp;
         this.velocity = velocityInp;
         this.angle = angleInp;
-        this.distanceToAvoid = 400;
+        this.distanceToAvoid = window.innerWidth / 5;
         this.nearbyBoids = []; // fast or slow?
     }
 
@@ -172,7 +172,7 @@ class Boid{
             context.beginPath();
             context.moveTo(this.xPosition, this.yPosition);
             context.lineTo(aFewBoids[i].xPosition, aFewBoids[i].yPosition);
-            context.fillStyle = "#00FF00";
+            context.strokeStyle = "#00FF00";
             context.stroke();
         }
     }
@@ -181,7 +181,7 @@ class Boid{
             context.beginPath();
             context.moveTo(this.xPosition, this.yPosition);
             context.lineTo(this.nearbyBoids[i].xPosition, this.nearbyBoids[i].yPosition);
-            context.fillStyle = "#FF0000";
+            context.strokeStyle = "#FF0000";
             context.stroke();
         }
     }
@@ -214,6 +214,7 @@ class Boid{
         this.RandomAngleChange();
 
         this.GetArrayOfNearbyBoidsFromAll();
+        this.DrawLineToAllBoids();
         this.DrawLineToNearbyBoids();
 
         this.MoveAwayFromNearbyBoids();
