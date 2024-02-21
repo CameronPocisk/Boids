@@ -45,9 +45,10 @@ function DistanceBetweenPoints(x1, y1, x2, y2){
 //This needs to be changed but its easiest like this rn
 function SetBoidStaticVars(){
     distanceToAvoid = window.innerWidth / 10; // Make fractoin of diagonal?
-    angleChangeTargeting = .05;
+    angleChangeTargeting =.05;
     angleChangeAvoiding = .06;
-    AngleChangeCohesion = .02;
+    angleChangeCohesion = .03;
+    angleRandomChange = .1;
 }
 
 class Boid{
@@ -60,12 +61,14 @@ class Boid{
     static distanceToAvoid;
     static angleChangeTargeting;
     static angleChangeAvoiding;
-    static AngleChangeCohesion;
+    static angleChangeCohesion;
+    static angleRandomChange;
 
     xPosition;
     yPosition;
     velocity;
     angle; // Radians looooool (for Math)
+    angleChange; // IDK if this changes the fluidity of the program but I will keep it for now
     sinOfBoidAngle;
     cosOfBoidAngle;
     
@@ -82,7 +85,7 @@ class Boid{
         this.yPosition = yPosInp;
         this.velocity = velocityInp;
         this.angle = angleInp;
-        this.nearbyBoids = []; // fast or slow?
+        this.nearbyBoids = []; // Make array of simplified boids (x,y,ang)?
     }
 
     DrawBoid()
@@ -127,7 +130,8 @@ class Boid{
     }
 
     RandomAngleChange(){
-        this.angle += RandomNumberBetween(-.1, .1);
+        this.angleChange += RandomNumberBetween(-1 * angleRandomChange, angleRandomChange);
+        // this.angle += RandomNumberBetween(-1 * angleRandomChange, angleRandomChange);
     }
 
     MoveToCoords(coordX, coordY, angleDiff = angleChangeTargeting){ // make into  helpers
@@ -145,10 +149,12 @@ class Boid{
         }
         // console.log("Boid in deg: " + this.angle * 180 / Math.PI); console.log("Angle from : " + angleFromBoid * 180 / Math.PI);
         if((angleFromBoid > this.angle && angleFromBoid < this.angle + Math.PI) || angleFromBoid < this.angle - Math.PI){
-            this.angle += angleDiff; // Turn left
+            // this.angle += angleDiff; // Turn left
+            this.angleChange += angleDiff;
         }
         else{
-            this.angle -= angleDiff; // Turn right
+            // this.angle -= angleDiff; // Turn right
+            this.angleChange -= angleDiff;
         }
     }
     MoveAwayFromCoords(coordX, coordY, angleDiff = angleChangeAvoiding){
@@ -164,14 +170,21 @@ class Boid{
             angleFromBoid += Math.PI*2;
         }
         if((angleFromBoid > this.angle && angleFromBoid < this.angle + Math.PI) || angleFromBoid < this.angle - Math.PI){
-            this.angle -= angleDiff; // Turn Right
+            // this.angle -= angleDiff; // Turn Right
+            this.angleChange -= angleDiff;
         }
         else{
-            this.angle += angleDiff; // Turn Left
+            // this.angle += angleDiff; // Turn Left
+            this.angleChange += angleDiff; 
         }
     }
     
-    MoveTowardsCursor(){ this.MoveToCoords(mouseXPosition, mouseYPosition, angleChangeTargeting); } // Add fun thing for mouse off screen?
+    MoveTowardsCursor(){ 
+        // if(mouseXPosition == 0 || mouseXPosition == window.innerWidth || mouseYPosition == 0 || mouseYPosition == window.innerHeights){
+            // console.log("not following cursor");
+            // return;
+        // }
+        this.MoveToCoords(mouseXPosition, mouseYPosition, angleChangeTargeting); } // Add fun thing for mouse off screen?
 
     MoveAwayFromObjectIfClose(objX, objY){  //distanceToAvoid
         if(DistanceBetweenPoints(this.xPosition, this.yPosition, objX, objY) < distanceToAvoid){
@@ -233,12 +246,13 @@ class Boid{
         }
         this.nearbyBoidAngleAvg /= this.nearbyBoids.length;
         // Relative angle as coordinate away from boid. 
-        this.MoveToCoords(this.xPosition + Math.cos(nearbyBoidAngleAvg), this.yPosition + Math.sin(nearbyBoidAngleAvg), AngleChangeCohesion);
+        this.MoveToCoords(this.xPosition + Math.cos(nearbyBoidAngleAvg), this.yPosition + Math.sin(nearbyBoidAngleAvg), angleChangeCohesion);
     }
 
     Update()
     {
-        //First calculations 
+        //First calculations
+        this.angleChange = this.angle;
         this.CalculateTrigAngleFactors();
         
         // GetNeededInfo from nearby
@@ -253,7 +267,9 @@ class Boid{
         // this.MoveTowardsCursor(); // Cohesion (tweaking)
         // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition);
         this.MoveAwayFromNearbyBoids(); // Seperation
-        // this.CoheasionToNearbyAngles(); // Allignment
+        this.CoheasionToNearbyAngles(); // Allignment
+
+        this.angle = this.angleChange; // Angle changes do not affect one another
 
         // Handle Movement
         this.MoveWithVelocity();
