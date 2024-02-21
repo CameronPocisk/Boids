@@ -9,7 +9,7 @@ var mouseYPosition = 0;
 // Helpful constants
 const FrameRateInMsec = (1/60) * 1000;
 const aFewBoids = [];
-const numBoids = 20;
+const numBoids = 5;
 
 // bools for - seperation, allignment, cohesion, WrapAround?
 
@@ -66,12 +66,10 @@ class Boid{
     yPosition;
     velocity;
     angle; // Radians looooool (for Math)
-
-
     sinOfBoidAngle;
     cosOfBoidAngle;
     
-    firstXPoint; // Triangle things
+    firstXPoint; // Triangle things these got to go soon
     firstYPoint;
     secondXPoint;
     secondYPoint;
@@ -187,7 +185,9 @@ class Boid{
             context.moveTo(this.xPosition, this.yPosition);
             context.lineTo(aFewBoids[i].xPosition, aFewBoids[i].yPosition);
             context.strokeStyle = "#00FF00";
+            //context.globalAlpha = .5
             context.stroke();
+            //context.globalAlpha = 1
         }
     }
     DrawLineToNearbyBoids(){
@@ -196,14 +196,17 @@ class Boid{
             context.moveTo(this.xPosition, this.yPosition);
             context.lineTo(this.nearbyBoids[i].xPosition, this.nearbyBoids[i].yPosition);
             context.strokeStyle = "#FF0000";
+            // context.globalAlpha = .5
             context.stroke();
+            //context.globalAlpha = 1
+
         }
     }
 
     GetArrayOfNearbyBoidsFromAll(){
         this.nearbyBoids = [];
         for(let i = 0; i < aFewBoids.length; i++){
-            var distFromBoid = DistanceBetweenPoints(this.xPosition, this.yPosition, aFewBoids[i].xPosition, aFewBoids[i].yPosition);
+            let distFromBoid = DistanceBetweenPoints(this.xPosition, this.yPosition, aFewBoids[i].xPosition, aFewBoids[i].yPosition);
             if(distFromBoid < distanceToAvoid){
                 this.nearbyBoids.push(aFewBoids[i]);
             }
@@ -238,15 +241,15 @@ class Boid{
         this.GetArrayOfNearbyBoidsFromAll();
         
         // Visual for nearby
-        // this.DrawLineToAllBoids();
-        // this.DrawLineToNearbyBoids();
+        this.DrawLineToAllBoids();
+        this.DrawLineToNearbyBoids();
         
         // Handle angle
         // this.RandomAngleChange(); // fun fun
-        this.CoheasionToNearbyAngles(); // Allignment
-        this.MoveAwayFromNearbyBoids(); // Seperatoin
+        // this.MoveAwayFromNearbyBoids(); // Seperation
+        this.MoveTowardsCursor(); // Cohesion (tweaking)
         // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition);
-        this.MoveTowardsCursor(); // Cohesion
+        // this.CoheasionToNearbyAngles(); // Allignment
 
         // Handle Movement
         this.MoveWithVelocity();
