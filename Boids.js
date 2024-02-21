@@ -31,7 +31,6 @@ function SetupCanvas(){
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    // canvas.style.border = "1px solid #FF0000";
     window.addEventListener("resize", ReportWindowSize);
     ReportWindowSize();
 }
@@ -48,12 +47,15 @@ class Boid{
     static distanceToAvoid;
     static widthOfBoid;
     static heightOfBoid;
-    static FeildOfView = Math.PI // When the boid will scan to find empty space
+    static FeildOfView = Math.PI // When the boid will scan to find empty space // Not really needed I
     
     xPosition;
     yPosition;
     velocity;
     angle; // Radians looooool (for Math)
+
+    //Add static vars for angle change relative for each check
+
     sinOfBoidAngle;
     cosOfBoidAngle;
     
@@ -64,6 +66,7 @@ class Boid{
     thirdXPoint;
     thirdYPoint;
     
+    // Constructor for making boid with different shape functoins
     constructor(xPosInp, yPosInp, velocityInp, angleInp) {
         this.xPosition = xPosInp;
         this.yPosition = yPosInp;
@@ -100,9 +103,7 @@ class Boid{
 
     CalculateTrigAngleFactors()
     {
-        // if(this.angle < 0){ // Needed?
-        // this.angle += 2 * Math.PI;
-        // } // look at the line below did i cook.
+        // } // look at the line below did i cook. This is used for screen coords as well
         this.angle = (this.angle + 2*Math.PI) % (2*Math.PI);
 
         this.angle %= 2 * Math.PI; // make sure spins dont affect point
@@ -121,14 +122,16 @@ class Boid{
     }
 
     MoveToCoords(coordX, coordY){
+        //Find angle using arctan
         const relativeXPosition = coordX - this.xPosition;
         const relativeYPosition = -1*(coordY - this.yPosition);
         var angleFromBoid = Math.atan(relativeYPosition / relativeXPosition);
 
-        if (relativeXPosition < 0){ // Handle weird Arctangent outputs
+        // Cope with arctan outputs
+        if (relativeXPosition < 0){ 
             angleFromBoid += Math.PI;
         }
-        else if(relativeYPosition < 0){ // 4th quad will range from 270 - 360 with this
+        else if(relativeYPosition < 0){
             angleFromBoid += Math.PI*2;
         }
         // console.log("Boid in deg: " + this.angle * 180 / Math.PI); console.log("Angle from : " + angleFromBoid * 180 / Math.PI);
@@ -140,6 +143,7 @@ class Boid{
         }
     }
     MoveAwayFromCoords(coordX, coordY){
+        // opposite of MoveToCoords (same logic opp turn angle)
         const relativeXPosition = coordX - this.xPosition;
         const relativeYPosition = -1*(coordY - this.yPosition);
         var angleFromBoid = Math.atan(relativeYPosition / relativeXPosition);
@@ -150,12 +154,11 @@ class Boid{
         else if(relativeYPosition < 0){ // 4th quad will range from 270 - 360 with this
             angleFromBoid += Math.PI*2;
         }
-        // console.log("Boid in deg: " + this.angle * 180 / Math.PI); console.log("Angle from : " + angleFromBoid * 180 / Math.PI);
         if((angleFromBoid > this.angle && angleFromBoid < this.angle + Math.PI) || angleFromBoid < this.angle - Math.PI){
-            this.angle -= .07; // Turn left
+            this.angle -= .07; // Turn Right
         }
         else{
-            this.angle += .07; // Turn right
+            this.angle += .07; // Turn Left
         }
     }
     
@@ -202,22 +205,33 @@ class Boid{
         }
     }
 
+    CoheasionToNearbyAngles(){
+        var nearbyBoidAngleAvg = 0; // Get the average
+        for(let i = 0; i < this.nearbyBoids.length; i++){
+            nearbyBoidAngleAvg += this.nearbyBoids[i].angle;
+        }
+        this.nearbyBoidAngleAvg /= this.nearbyBoids.length;
+        this.MoveToCoords(this.xPosition + Math.cos(nearbyBoidAngleAvg), this.yPosition + Math.sin(nearbyBoidAngleAvg));
+    }
 
     Update()
     {
         //First calculations 
         this.CalculateTrigAngleFactors();
         
-        // Handle angle
-        // this.MoveTowardsCursor(); // Add fun thing for mouse off screen?
-        // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition);
-        this.RandomAngleChange();
-
+        // GetNeededInfo from nearby
         this.GetArrayOfNearbyBoidsFromAll();
+        
+        // Visual for nearby
         this.DrawLineToAllBoids();
         this.DrawLineToNearbyBoids();
-
-        this.MoveAwayFromNearbyBoids();
+        
+        // Handle angle
+        this.RandomAngleChange();
+        // this.MoveAwayFromNearbyBoids();
+        this.CoheasionToNearbyAngles();
+        // this.MoveTowardsCursor(); // Add fun thing for mouse off screen?
+        // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition);
 
         // Handle Movement
         this.MoveWithVelocity();
