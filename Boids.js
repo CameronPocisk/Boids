@@ -9,7 +9,7 @@ var mouseYPosition = 0;
 // Helpful constants
 const FrameRateInMsec = (1/60) * 1000;
 const aFewBoids = [];
-const numBoids = 5;
+const numBoids = 20;
 
 // bools for - seperation, allignment, cohesion, WrapAround?
 
@@ -44,10 +44,10 @@ function DistanceBetweenPoints(x1, y1, x2, y2){
 
 //This needs to be changed but its easiest like this rn
 function SetBoidStaticVars(){
-    distanceToAvoid = window.innerWidth / 5;
-    angleChangeTargeting = .04;
-    angleChangeAvoiding = .07;
-    AngleChangeCohesion = .05;
+    distanceToAvoid = window.innerWidth / 12;
+    angleChangeTargeting = .05;
+    angleChangeAvoiding = .06;
+    AngleChangeCohesion = .02;
 }
 
 class Boid{
@@ -177,7 +177,7 @@ class Boid{
 
     MoveAwayFromObjectIfClose(objX, objY){  //distanceToAvoid
         if(DistanceBetweenPoints(this.xPosition, this.yPosition, objX, objY) < distanceToAvoid){
-            this.MoveAwayFromCoords(objX, objY);
+            this.MoveAwayFromCoords(objX, objY, angleChangeTargeting);
         }
     }
 
@@ -217,6 +217,9 @@ class Boid{
     }
 
     CoheasionToNearbyAngles(){
+        if(this.nearbyBoids.length == 0){
+            return; // early exit
+        }
         var nearbyBoidAngleAvg = 0; // Get the average
         for(let i = 0; i < this.nearbyBoids.length; i++){
             nearbyBoidAngleAvg += this.nearbyBoids[i].angle;
@@ -235,13 +238,14 @@ class Boid{
         this.GetArrayOfNearbyBoidsFromAll();
         
         // Visual for nearby
-        this.DrawLineToAllBoids();
-        this.DrawLineToNearbyBoids();
+        // this.DrawLineToAllBoids();
+        // this.DrawLineToNearbyBoids();
         
         // Handle angle
         // this.RandomAngleChange(); // fun fun
-        this.MoveAwayFromNearbyBoids(); // Seperatoin
         this.CoheasionToNearbyAngles(); // Allignment
+        this.MoveAwayFromNearbyBoids(); // Seperatoin
+        // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition);
         this.MoveTowardsCursor(); // Cohesion
 
         // Handle Movement
@@ -265,7 +269,7 @@ function main()
     for(let i = 0; i < numBoids; i++){
         aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
         RandomNumberBetween(0, window.innerHeight),
-        RandomNumberBetween(7, 8),
+        RandomNumberBetween(4, 5),
         Math.PI/2));
     }
     // for(let i = 0; i < numBoids; i++){
