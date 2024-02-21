@@ -43,6 +43,7 @@ class Boid{
 
     static widthOfBoid;
     static heightOfBoid;
+    static FeildOfView = Math.PI // When the boid will scan to find empty space
 
     xPosition;
     yPosition;
@@ -75,6 +76,15 @@ class Boid{
         context.fillStyle = "#56554E";
         context.fill();
     }
+    UpdateTriangleCoordinates()
+    {   // Math for drawing an isocolese triangle from its center given its X, Y, Base, Height, Angle. (y acts in neg)
+        this.firstXPoint = this.xPosition + (this.cosOfBoidAngle * heightOfBoid * 1/2);
+        this.firstYPoint = this.yPosition - (this.sinOfBoidAngle * heightOfBoid * 1/2);
+        this.secondXPoint= this.xPosition + (-1/2 * ((this.cosOfBoidAngle * heightOfBoid) - this.sinOfBoidAngle * widthOfBoid));
+        this.secondYPoint= this.yPosition - (-1/2 * ((this.sinOfBoidAngle * heightOfBoid) + this.cosOfBoidAngle * widthOfBoid));
+        this.thirdXPoint = this.xPosition + (-1/2 * ((this.cosOfBoidAngle * heightOfBoid) + this.sinOfBoidAngle * widthOfBoid));
+        this.thirdYPoint = this.yPosition - (-1/2 * ((this.sinOfBoidAngle * heightOfBoid) - this.cosOfBoidAngle * widthOfBoid));
+    }
 
     HandleOutOfBounds(){ // Uses modulous to ensure that it stays within the bounds. works all directoins with plus screenSize and mod
         this.xPosition = (this.xPosition + window.innerWidth) % window.innerWidth;
@@ -93,22 +103,16 @@ class Boid{
         this.cosOfBoidAngle = Math.cos(this.angle);
     }
 
-    UpdateTriangleCoordinates()
-    {   // Math for drawing an isocolese triangle from its center given its X, Y, Base, Height, Angle. (y acts in neg)
-        this.firstXPoint = this.xPosition + (this.cosOfBoidAngle * heightOfBoid * 1/2);
-        this.firstYPoint = this.yPosition - (this.sinOfBoidAngle * heightOfBoid * 1/2);
-        this.secondXPoint= this.xPosition + (-1/2 * ((this.cosOfBoidAngle * heightOfBoid) - this.sinOfBoidAngle * widthOfBoid));
-        this.secondYPoint= this.yPosition - (-1/2 * ((this.sinOfBoidAngle * heightOfBoid) + this.cosOfBoidAngle * widthOfBoid));
-        this.thirdXPoint = this.xPosition + (-1/2 * ((this.cosOfBoidAngle * heightOfBoid) + this.sinOfBoidAngle * widthOfBoid));
-        this.thirdYPoint = this.yPosition - (-1/2 * ((this.sinOfBoidAngle * heightOfBoid) - this.cosOfBoidAngle * widthOfBoid));
-    }
-
     MoveWithVelocity()
     {
         this.xPosition += this.cosOfBoidAngle * this.velocity;
         this.yPosition -= this.sinOfBoidAngle * this.velocity;
     }
 
+    RandomAngleChange(){
+        this.angle += RandomNumberBetween(-.1, .1);
+    }
+    
     MoveTowardsCursor()
     {
         const relativeXPosition = mouseXPosition - this.xPosition;
@@ -130,8 +134,8 @@ class Boid{
         }
     }
 
-    RandomAngleChange(){
-        this.angle += RandomNumberBetween(-.1, .1);
+    DrawLineToAllBoids(constBoidArray){
+        
     }
 
     Update()
@@ -161,18 +165,18 @@ function main()
     // Initialize boids
     const aFewBoids = [];
 
-    for(let i = 0; i < numBoids; i++){
-        aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
-        RandomNumberBetween(0, window.innerHeight),
-        RandomNumberBetween(7, 8),
-        Math.PI/2));
-    }
     // for(let i = 0; i < numBoids; i++){
-    //     aFewBoids.push(new Boid(window.innerWidth/2, 
-    //     window.innerHeight/2,
-    //     RandomNumberBetween(0, 0),
+    //     aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
+    //     RandomNumberBetween(0, window.innerHeight),
+    //     RandomNumberBetween(7, 8),
     //     Math.PI/2));
     // }
+    for(let i = 0; i < numBoids; i++){
+        aFewBoids.push(new Boid(window.innerWidth/2, 
+        window.innerHeight/2,
+        RandomNumberBetween(0, 0),
+        Math.PI/2));
+    }
 
     // Start main loop
     var frameCount = 0;
