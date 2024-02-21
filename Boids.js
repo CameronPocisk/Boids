@@ -42,19 +42,31 @@ function DistanceBetweenPoints(x1, y1, x2, y2){
     return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 }
 
+//This needs to be changed but its easiest like this rn
+function SetBoidStaticVars(){
+    distanceToAvoid = window.innerWidth / 5;
+    angleChangeTargeting = .04;
+    angleChangeAvoiding = .07;
+    AngleChangeCohesion = .05;
+}
+
 class Boid{
 
     static distanceToAvoid;
     static widthOfBoid;
     static heightOfBoid;
-    static FeildOfView = Math.PI // When the boid will scan to find empty space // Not really needed I
-    
+
+    //Add static vars for angle change relative for each check
+    static distanceToAvoid;
+    static angleChangeTargeting;
+    static angleChangeAvoiding;
+    static AngleChangeCohesion;
+
     xPosition;
     yPosition;
     velocity;
     angle; // Radians looooool (for Math)
 
-    //Add static vars for angle change relative for each check
 
     sinOfBoidAngle;
     cosOfBoidAngle;
@@ -72,7 +84,6 @@ class Boid{
         this.yPosition = yPosInp;
         this.velocity = velocityInp;
         this.angle = angleInp;
-        this.distanceToAvoid = window.innerWidth / 5;
         this.nearbyBoids = []; // fast or slow?
     }
 
@@ -121,7 +132,7 @@ class Boid{
         this.angle += RandomNumberBetween(-.1, .1);
     }
 
-    MoveToCoords(coordX, coordY){
+    MoveToCoords(coordX, coordY, angleDiff = angleChangeTargeting){
         //Find angle using arctan
         const relativeXPosition = coordX - this.xPosition;
         const relativeYPosition = -1*(coordY - this.yPosition);
@@ -142,7 +153,7 @@ class Boid{
             this.angle -= .07; // Turn right
         }
     }
-    MoveAwayFromCoords(coordX, coordY){
+    MoveAwayFromCoords(coordX, coordY, angleDiff = angleChangeAvoiding){
         // opposite of MoveToCoords (same logic opp turn angle)
         const relativeXPosition = coordX - this.xPosition;
         const relativeYPosition = -1*(coordY - this.yPosition);
@@ -162,10 +173,10 @@ class Boid{
         }
     }
     
-    MoveTowardsCursor(){ this.MoveToCoords(mouseXPosition, mouseYPosition); }
+    MoveTowardsCursor(){ this.MoveToCoords(mouseXPosition, mouseYPosition, angleChangeTargeting); } // Add fun thing for mouse off screen?
 
     MoveAwayFromObjectIfClose(objX, objY){  //distanceToAvoid
-        if(DistanceBetweenPoints(this.xPosition, this.yPosition, objX, objY) < this.distanceToAvoid){
+        if(DistanceBetweenPoints(this.xPosition, this.yPosition, objX, objY) < distanceToAvoid){
             this.MoveAwayFromCoords(objX, objY);
         }
     }
@@ -193,7 +204,7 @@ class Boid{
         this.nearbyBoids = [];
         for(let i = 0; i < aFewBoids.length; i++){
             var distFromBoid = DistanceBetweenPoints(this.xPosition, this.yPosition, aFewBoids[i].xPosition, aFewBoids[i].yPosition);
-            if(distFromBoid < this.distanceToAvoid){
+            if(distFromBoid < distanceToAvoid){
                 this.nearbyBoids.push(aFewBoids[i]);
             }
         }
@@ -201,7 +212,7 @@ class Boid{
 
     MoveAwayFromNearbyBoids(){ // Will this work well without a formula for how much angle to change?
         for(let i = 0; i < this.nearbyBoids.length; i++){
-            this.MoveAwayFromCoords(this.nearbyBoids[i].xPosition, this.nearbyBoids[i].yPosition);
+            this.MoveAwayFromCoords(this.nearbyBoids[i].xPosition, this.nearbyBoids[i].yPosition, angleChangeAvoiding);
         }
     }
 
@@ -211,7 +222,8 @@ class Boid{
             nearbyBoidAngleAvg += this.nearbyBoids[i].angle;
         }
         this.nearbyBoidAngleAvg /= this.nearbyBoids.length;
-        this.MoveToCoords(this.xPosition + Math.cos(nearbyBoidAngleAvg), this.yPosition + Math.sin(nearbyBoidAngleAvg));
+        // Relative angle as coordinate away from boid. 
+        this.MoveToCoords(this.xPosition + Math.cos(nearbyBoidAngleAvg), this.yPosition + Math.sin(nearbyBoidAngleAvg), AngleChangeCohesion);
     }
 
     Update()
@@ -227,11 +239,10 @@ class Boid{
         this.DrawLineToNearbyBoids();
         
         // Handle angle
-        this.RandomAngleChange();
-        // this.MoveAwayFromNearbyBoids();
-        this.CoheasionToNearbyAngles();
-        // this.MoveTowardsCursor(); // Add fun thing for mouse off screen?
-        // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition);
+        // this.RandomAngleChange(); // fun fun
+        this.MoveAwayFromNearbyBoids(); // Seperatoin
+        this.CoheasionToNearbyAngles(); // Allignment
+        this.MoveTowardsCursor(); // Cohesion
 
         // Handle Movement
         this.MoveWithVelocity();
@@ -247,6 +258,7 @@ class Boid{
 function main()
 {
     SetupCanvas();
+    SetBoidStaticVars();
 
     // Initialize boids
 
