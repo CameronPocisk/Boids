@@ -9,7 +9,7 @@ var mouseYPosition = 0;
 // Helpful constants
 const FrameRateInMsec = (1/60) * 1000;
 const aFewBoids = [];
-const numBoids = 5;
+const numBoids = 4;
 
 // bools for - seperation, allignment, cohesion, WrapAround?
 
@@ -44,7 +44,7 @@ function DistanceBetweenPoints(x1, y1, x2, y2){
 
 //This needs to be changed but its easiest like this rn
 function SetBoidStaticVars(){
-    distanceToAvoid = window.innerWidth / 12;
+    distanceToAvoid = window.innerWidth / 10; // Make fractoin of diagonal?
     angleChangeTargeting = .05;
     angleChangeAvoiding = .06;
     AngleChangeCohesion = .02;
@@ -130,11 +130,11 @@ class Boid{
         this.angle += RandomNumberBetween(-.1, .1);
     }
 
-    MoveToCoords(coordX, coordY, angleDiff = angleChangeTargeting){
+    MoveToCoords(coordX, coordY, angleDiff = angleChangeTargeting){ // make into  helpers
         //Find angle using arctan
-        const relativeXPosition = coordX - this.xPosition;
-        const relativeYPosition = -1*(coordY - this.yPosition);
-        var angleFromBoid = Math.atan(relativeYPosition / relativeXPosition);
+        let relativeXPosition = coordX - this.xPosition;
+        let relativeYPosition = -1*(coordY - this.yPosition);
+        let angleFromBoid = Math.atan(relativeYPosition / relativeXPosition);
 
         // Cope with arctan outputs
         if (relativeXPosition < 0){ 
@@ -145,17 +145,17 @@ class Boid{
         }
         // console.log("Boid in deg: " + this.angle * 180 / Math.PI); console.log("Angle from : " + angleFromBoid * 180 / Math.PI);
         if((angleFromBoid > this.angle && angleFromBoid < this.angle + Math.PI) || angleFromBoid < this.angle - Math.PI){
-            this.angle += .07; // Turn left
+            this.angle += angleDiff; // Turn left
         }
         else{
-            this.angle -= .07; // Turn right
+            this.angle -= angleDiff; // Turn right
         }
     }
     MoveAwayFromCoords(coordX, coordY, angleDiff = angleChangeAvoiding){
         // opposite of MoveToCoords (same logic opp turn angle)
-        const relativeXPosition = coordX - this.xPosition;
-        const relativeYPosition = -1*(coordY - this.yPosition);
-        var angleFromBoid = Math.atan(relativeYPosition / relativeXPosition);
+        let relativeXPosition = coordX - this.xPosition;
+        let relativeYPosition = -1*(coordY - this.yPosition);
+        let angleFromBoid = Math.atan(relativeYPosition / relativeXPosition);
 
         if (relativeXPosition < 0){ // Handle weird Arctangent outputs
             angleFromBoid += Math.PI;
@@ -164,10 +164,10 @@ class Boid{
             angleFromBoid += Math.PI*2;
         }
         if((angleFromBoid > this.angle && angleFromBoid < this.angle + Math.PI) || angleFromBoid < this.angle - Math.PI){
-            this.angle -= .07; // Turn Right
+            this.angle -= angleDiff; // Turn Right
         }
         else{
-            this.angle += .07; // Turn Left
+            this.angle += angleDiff; // Turn Left
         }
     }
     
@@ -207,14 +207,18 @@ class Boid{
         this.nearbyBoids = [];
         for(let i = 0; i < aFewBoids.length; i++){
             let distFromBoid = DistanceBetweenPoints(this.xPosition, this.yPosition, aFewBoids[i].xPosition, aFewBoids[i].yPosition);
-            if(distFromBoid < distanceToAvoid){
+            if(distFromBoid < distanceToAvoid && distFromBoid != 0){ // Do not add oneself to the arr this will cause issues
                 this.nearbyBoids.push(aFewBoids[i]);
             }
         }
     }
 
     MoveAwayFromNearbyBoids(){ // Will this work well without a formula for how much angle to change?
+        if(this.nearbyBoids.length == 0){
+            return; // unneded but here for debugging
+        }
         for(let i = 0; i < this.nearbyBoids.length; i++){
+            console.log("Boids are nearby moving away");
             this.MoveAwayFromCoords(this.nearbyBoids[i].xPosition, this.nearbyBoids[i].yPosition, angleChangeAvoiding);
         }
     }
@@ -245,10 +249,10 @@ class Boid{
         this.DrawLineToNearbyBoids();
         
         // Handle angle
-        // this.RandomAngleChange(); // fun fun
-        // this.MoveAwayFromNearbyBoids(); // Seperation
-        this.MoveTowardsCursor(); // Cohesion (tweaking)
+        this.RandomAngleChange(); // fun fun
+        // this.MoveTowardsCursor(); // Cohesion (tweaking)
         // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition);
+        this.MoveAwayFromNearbyBoids(); // Seperation
         // this.CoheasionToNearbyAngles(); // Allignment
 
         // Handle Movement
