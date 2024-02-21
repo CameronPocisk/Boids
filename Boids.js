@@ -69,8 +69,8 @@ class Boid{
         this.yPosition = yPosInp;
         this.velocity = velocityInp;
         this.angle = angleInp;
-        this.distanceToAvoid = 200;
-        this.nearbyBoids = []; // adds n
+        this.distanceToAvoid = 400;
+        this.nearbyBoids = []; // fast or slow?
     }
 
     DrawBoid()
@@ -159,22 +159,20 @@ class Boid{
         }
     }
     
-    MoveTowardsCursor()
-    {
-        this.MoveToCoords(mouseXPosition, mouseYPosition);
-    }
+    MoveTowardsCursor(){ this.MoveToCoords(mouseXPosition, mouseYPosition); }
 
     MoveAwayFromObjectIfClose(objX, objY){  //distanceToAvoid
-        if(DistanceBetweenPoints(this.xPosition, this.yPosition, objX, objY) < 200){
+        if(DistanceBetweenPoints(this.xPosition, this.yPosition, objX, objY) < this.distanceToAvoid){
             this.MoveAwayFromCoords(objX, objY);
         }
     }
 
-    DrawLineToAllBoids(aFewBoids){
+    DrawLineToAllBoids(){
         for(let i = 0; i < aFewBoids.length; i++){
             context.beginPath();
             context.moveTo(this.xPosition, this.yPosition);
             context.lineTo(aFewBoids[i].xPosition, aFewBoids[i].yPosition);
+            context.fillStyle = "#00FF00";
             context.stroke();
         }
     }
@@ -188,12 +186,12 @@ class Boid{
         }
     }
 
-    GetArrayOfNearbyBoidsFromAll(boidArrayIn){
-        var nearbyBoids = [];
-        for(let i = 0; i < boidArrayIn.length; i++){
-            var dist = DistanceBetweenPoints(this.xPosition, this.yPosition, boidArrayIn[i].xPosition, boidArrayIn[i].yPosition);
-            if(DistanceBetweenPoints() < this.distanceToAvoid){
-                nearbyBoids.push(boidArrayIn[i]);
+    GetArrayOfNearbyBoidsFromAll(){
+        this.nearbyBoids = [];
+        for(let i = 0; i < aFewBoids.length; i++){
+            var distFromBoid = DistanceBetweenPoints(this.xPosition, this.yPosition, aFewBoids[i].xPosition, aFewBoids[i].yPosition);
+            if(distFromBoid < this.distanceToAvoid){
+                this.nearbyBoids.push(aFewBoids[i]);
             }
         }
     }
@@ -215,9 +213,9 @@ class Boid{
         // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition);
         this.RandomAngleChange();
 
-        this.GetArrayOfNearbyBoidsFromAll(aFewBoids);
+        this.GetArrayOfNearbyBoidsFromAll();
         this.DrawLineToNearbyBoids();
-        
+
         this.MoveAwayFromNearbyBoids();
 
         // Handle Movement
