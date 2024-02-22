@@ -45,8 +45,8 @@ class BoidScape{
     // Parameterize all statics
     widthOfBoids;
     heightOfBoids;
-    // widthOfBoidFrac;
-    // heightOfBoidFrac;
+    widthOfBoidFrac;
+    heightOfBoidFrac;
     defaultVelocity;
     distanceToAvoid;
     angleChangeTargeting;
@@ -58,6 +58,9 @@ class BoidScape{
     shouldAllign;
     shouldCohere;
 
+    mouseX;
+    mouseY;
+
     // These are globals from main program
     boidScapeCanvas;
     boidScapeContext; 
@@ -65,7 +68,7 @@ class BoidScape{
 
     everyBoid = []; // empty dec here?
     numBoids;
-    nearbyMap = new Map(); // Weakmap should work but inspect it
+    nearbyMap = new WeakMap(); // Weakmap should work but inspect it
 
     // BIG IDEA
     // MAKE A DICTIONARY (MAP IN JS)
@@ -88,8 +91,8 @@ class BoidScape{
     canvasRef,
     numberOfBoids = 5,
     velocityForBoids = 5,
-    widthOfBoidIn = 30,      // fraction of innerheight window.innerWidth
-    heightOfBoidIn = 50,     // fraction of innerheight window.innerHeight
+    widthOfBoidDenomIn = 30,      // fraction of innerheight window.innerWidth
+    heightOfBoidDenomIn = 15,     // fraction of innerheight window.innerHeight
     distanceToAvoidMultIn = 200,  // Make Multiple Of Width
     angleChangeTargetingIn =.05, // How much to turn when following
     angleChangeAvoidingIn = .06, // How much to turn avoiding
@@ -105,8 +108,12 @@ class BoidScape{
         // Set statics here to var ins
 
         this.defaultVelocity = velocityForBoids;
-        this.widthOfBoids = widthOfBoidIn;
-        this.heightOfBoids = heightOfBoidIn;
+
+        this.widthOfBoids = this.boidScapeCanvas.height / widthOfBoidDenomIn;
+        this.heightOfBoids = this.boidScapeCanvas.height / heightOfBoidDenomIn;
+        this.widthOfBoidFrac = widthOfBoidDenomIn;
+        this.heightOfBoidFrac = heightOfBoidDenomIn;
+
         this.distanceToAvoid = distanceToAvoidMultIn; // * 30 FIX
         this.angleChangeTargeting = angleChangeTargetingIn;
         this.angleChangeAvoiding = angleChangeAvoidingIn;
@@ -118,7 +125,31 @@ class BoidScape{
         this.shouldCohere = shouldCohereIn;
 
         // this.InitBoidList(); // Should I do this?
+        this.reportMousePosition = this.reportMousePosition.bind(this);
+        this.boidScapeCanvas.addEventListener('mousemove', this.reportMousePosition);
+
+        this.OnCanvasResize = this.OnCanvasResize.bind(this);
+        this.boidScapeCanvas.addEventListener('resize', this.OnCanvasResize);
+        // Attach the resize event listener
+        this.OnCanvasResize();
+
+        // Initial setup
+
+        // window.addEventListener("load", StartProgram);
     }
+
+    OnCanvasResize(event){
+        const rect = this.boidScapeCanvas.getBoundingClientRect();
+        this.widthOfBoids = this.boidScapeCanvas.width / this.widthOfBoidFrac;
+        this.heightOfBoids = this.boidScapeCanvas.height / this.heightOfBoidFrac;
+        console.log("Canvas resized");
+    }
+    reportMousePosition(event) {
+        // Get mouse coordinates
+        this.mouseX = event.clientX;
+        this.mouseY = event.clientY;
+      }
+
 
     InitBoidList(){
         //Reinitialize the boid arr from constants
@@ -132,7 +163,8 @@ class BoidScape{
     }
 
     FillCloseMap(){
-        this.nearbyMap.clear();
+        // this.nearbyMap.clear();
+        this.nearbyMap = new WeakMap();
         for(let i = 0; i < this.everyBoid.length; i++){
             this.nearbyMap.set(this.everyBoid[i], []);
         }
@@ -148,7 +180,6 @@ class BoidScape{
                 
 
                 let distFromBoid = DistanceBetweenPoints(mainKey.xPosition, mainKey.yPosition, RelativeBoidKey.xPosition, RelativeBoidKey.yPosition);
-                console.log(distFromBoid);
                 if(distFromBoid < this.distanceToAvoid){
                     // Could be one line but I this is easier to see for now
                     // let mainValue = this.nearbyMap.get(mainKey);
@@ -350,7 +381,6 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
     }
     DrawLineToNearbyBoids(canvasContextIn, strokeColor = "#FF0000"){
         for(let i = 0; i < this.nearbyBoids.length; i++){
-            console.log("Drawing to nearby");
             canvasContextIn.beginPath();
             canvasContextIn.moveTo(this.xPosition, this.yPosition);
             canvasContextIn.lineTo(this.nearbyBoids[i].xPosition, this.nearbyBoids[i].yPosition);
