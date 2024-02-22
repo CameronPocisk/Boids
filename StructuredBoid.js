@@ -11,8 +11,7 @@ const FrameRateInMsec = (1/60) * 1000;
 const aFewBoids = [];
 const numBoids = 4;
 
-// bools for - seperation, allignment, cohesion, WrapAround?
-
+// Where do these functoins go into?
 function StartProgram(){
     main(); // Happens here so everthing starts once loaded. Helps with sizing and potential bugs
 }
@@ -27,7 +26,7 @@ function UpdateMouseCoords(event) {
 }
 
 function SetupCanvas(){
-    console.log("Running Program (Hello Boids)");
+    console.log("Running Program (Hello Strucutred Boids)");
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -51,8 +50,105 @@ function SetBoidStaticVars(){
     angleRandomChange = .1;
 }
 
-class Boid{
+class BoidScape{
+    // These are globals from main program
+    canvas = document.getElementById("boidPlane");
+    context = canvas.getContext("2d");
+    FrameRateInMsec = (1/60) * 1000;
+    mouseXPosition = 0;
+    mouseYPosition = 0;
 
+    // Globals that I think belong here
+    everyBoid = [];
+    nearbyMap = new Map();
+
+    // BIG IDEA
+    // MAKE A DICTIONARY (MAP IN JS)
+    // THIS MAP WILL HAVE A KEY FOR EVERY BOID
+    // EVERY KEY WILL HAVE A VALUE THAT IS A LIST OF THE NEARBY BOIDS
+    // GO THROUGH THE FIRST ELEM TO LAST
+    // THEN SECOND TO LAST
+    // ETC UNTIL THE MAP IS FULL 
+    // EATCH MATCH WILL HAVE TO MAKE THEM BOTH ADD THEM TO THE MAP
+
+    // KEY      VALUE
+    // boid1    [boid 2, boid 3]
+    // boid2    [boid 1]
+    // boid3    [boid 1, boid 2]
+
+
+    numBoids;
+    
+    //Bools for Rools
+    shouldSeperate;
+    shouldAllign;
+    shouldCohere;
+
+
+    constructor(){
+
+    }
+
+    FillCloseMap(){
+        this.nearbyMap.clear();
+    }
+
+};
+
+// This class will be used to store the nearby Boids
+class XYAngFromBoid{
+    xPosition;
+    yPosition;
+    angle;
+    // ShouldAvoid; // Potential boolean for rule following
+    constructor(xIn, yIn, angleIn){
+        this.xPosition = xIn;
+        this.yPosition = yIn;
+        this.angle = angleInIn;
+        // this.shouldAvoid = shouldAvoidIn
+    }
+}
+
+class DrawableObject{
+    xPosition;
+    yPosition;
+    angle;
+    sinAngle;
+    cosAngle;
+    // Should I extend the constructor for draw functoin?
+    constructor(xPosInp, yPosInp, angleInp){
+        this.xPosition = xPosInp;
+        this.yPosition = yPosInp;
+        this.angle = angleInp;
+    }
+    //Grab statics from higher class?
+
+    // Is triangle rn, can I pass in functons?
+    DrawShape(){ // 
+        let firstXPoint = this.xPosition + (this.cosAngle * heightOfBoid * 1/2);
+        let firstYPoint = this.yPosition - (this.sinAngle * heightOfBoid * 1/2);
+        let secondXPoint= this.xPosition + (-1/2 * ((this.cosAngle * heightOfBoid) - this.sinAngle * widthOfBoid));
+        let secondYPoint= this.yPosition - (-1/2 * ((this.sinAngle * heightOfBoid) + this.cosAngle * widthOfBoid));
+        let thirdXPoint = this.xPosition + (-1/2 * ((this.cosAngle * heightOfBoid) + this.sinAngle * widthOfBoid));
+        let thirdYPoint = this.yPosition - (-1/2 * ((this.sinAngle * heightOfBoid) - this.cosAngle * widthOfBoid));
+
+        context.beginPath();
+
+        context.moveTo(firstXPoint, firstYPoint);
+        context.lineTo(secondXPoint, secondYPoint);
+        context.lineTo(thirdXPoint, thirdYPoint);
+        context.fillStyle = "#56554E";
+        context.fill();
+    }
+    CalculateTrigAngleFactors()
+    {
+        this.angle = (this.angle + 2*Math.PI) % (2*Math.PI); // simplify / wrap angle (0-360)
+        this.sinAngle = Math.sin(this.angle);
+        this.cosAngle = Math.cos(this.angle);
+    }
+}
+
+class Boid2 extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
     static distanceToAvoid;
     static widthOfBoid;
     static heightOfBoid;
@@ -64,39 +160,14 @@ class Boid{
     static angleChangeCohesion;
     static angleRandomChange;
 
-    xPosition;
-    yPosition;
     velocity;
-    angle; // Radians looooool (for Math)
-    angleChange; // IDK if this changes the fluidity of the program but I will keep it for now
-    sinOfBoidAngle;
-    cosOfBoidAngle;
-    
-    // Constructor for making boid with different shape functoins
-    constructor(xPosInp, yPosInp, velocityInp, angleInp) {
-        this.xPosition = xPosInp;
-        this.yPosition = yPosInp;
-        this.velocity = velocityInp;
-        this.angle = angleInp;
-        this.nearbyBoids = []; // Make array of simplified boids (x,y,ang)?
-    }
+    nearbyBoids = [];
+    // angleChange;
 
-    DrawBoid()
-    {   // Math for drawing an isocolese triangle from its center given its X, Y, Base, Height, Angle. (y acts in neg)
-        let firstXPoint = this.xPosition + (this.cosOfBoidAngle * heightOfBoid * 1/2);
-        let firstYPoint = this.yPosition - (this.sinOfBoidAngle * heightOfBoid * 1/2);
-        let secondXPoint= this.xPosition + (-1/2 * ((this.cosOfBoidAngle * heightOfBoid) - this.sinOfBoidAngle * widthOfBoid));
-        let secondYPoint= this.yPosition - (-1/2 * ((this.sinOfBoidAngle * heightOfBoid) + this.cosOfBoidAngle * widthOfBoid));
-        let thirdXPoint = this.xPosition + (-1/2 * ((this.cosOfBoidAngle * heightOfBoid) + this.sinOfBoidAngle * widthOfBoid));
-        let thirdYPoint = this.yPosition - (-1/2 * ((this.sinOfBoidAngle * heightOfBoid) - this.cosOfBoidAngle * widthOfBoid));
-
-        context.beginPath();
-
-        context.moveTo(firstXPoint, firstYPoint);
-        context.lineTo(secondXPoint, secondYPoint);
-        context.lineTo(thirdXPoint, thirdYPoint);
-        context.fillStyle = "#56554E";
-        context.fill();
+    // How work
+    constructor(xPosInp, yPosInp, angleInp, velocityInp) {
+        super(xPosInp, yPosInp, angleInp);
+        this.velocity = velocityInp
     }
 
     HandleOutOfBounds(){ // Uses modulous to ensure that it stays within the bounds. works all directoins with plus screenSize and mod
@@ -104,27 +175,15 @@ class Boid{
         this.yPosition = (this.yPosition + window.innerHeight) % window.innerHeight;
     }
 
-    CalculateTrigAngleFactors()
-    {
-        // } // look at the line below did i cook. This is used for screen coords as well
-        this.angle = (this.angle + 2*Math.PI) % (2*Math.PI);
-
-        this.angle %= 2 * Math.PI; // make sure spins dont affect point
-        this.sinOfBoidAngle = Math.sin(this.angle);
-        this.cosOfBoidAngle = Math.cos(this.angle);
-    }
-
     MoveWithVelocity()
     {
-        this.xPosition += this.cosOfBoidAngle * this.velocity;
-        this.yPosition -= this.sinOfBoidAngle * this.velocity;
+        this.xPosition += this.cosAngle * this.velocity;
+        this.yPosition -= this.sinAngle * this.velocity;
     }
-
     RandomAngleChange(){
         this.angleChange += RandomNumberBetween(-1 * angleRandomChange, angleRandomChange);
         // this.angle += RandomNumberBetween(-1 * angleRandomChange, angleRandomChange);
     }
-
     MoveToCoords(coordX, coordY, angleDiff = angleChangeTargeting){ // make into  helpers
         //Find angle using arctan
         let relativeXPosition = coordX - this.xPosition;
@@ -169,20 +228,24 @@ class Boid{
             this.angleChange += angleDiff; 
         }
     }
-    
     MoveTowardsCursor(){ 
-        // if(mouseXPosition == 0 || mouseXPosition == window.innerWidth || mouseYPosition == 0 || mouseYPosition == window.innerHeights){
-            // console.log("not following cursor");
-            // return;
-        // }
-        this.MoveToCoords(mouseXPosition, mouseYPosition, angleChangeTargeting); } // Add fun thing for mouse off screen?
+        this.MoveToCoords(mouseXPosition, mouseYPosition, angleChangeTargeting); 
+    } // Add fun thing for mouse off screen?
 
     MoveAwayFromObjectIfClose(objX, objY){  //distanceToAvoid
         if(DistanceBetweenPoints(this.xPosition, this.yPosition, objX, objY) < distanceToAvoid){
             this.MoveAwayFromCoords(objX, objY, angleChangeTargeting);
         }
     }
-
+    GetArrayOfNearbyBoidsFromAll(){
+        this.nearbyBoids = [];
+        for(let i = 0; i < aFewBoids.length; i++){
+            let distFromBoid = DistanceBetweenPoints(this.xPosition, this.yPosition, aFewBoids[i].xPosition, aFewBoids[i].yPosition);
+            if(distFromBoid < distanceToAvoid && distFromBoid != 0){ // Do not add oneself to the arr this will cause issues
+                this.nearbyBoids.push(aFewBoids[i]);
+            }
+        }
+    }
     DrawLineToAllBoids(){
         for(let i = 0; i < aFewBoids.length; i++){
             context.beginPath();
@@ -201,17 +264,6 @@ class Boid{
             context.stroke();
         }
     }
-
-    GetArrayOfNearbyBoidsFromAll(){
-        this.nearbyBoids = [];
-        for(let i = 0; i < aFewBoids.length; i++){
-            let distFromBoid = DistanceBetweenPoints(this.xPosition, this.yPosition, aFewBoids[i].xPosition, aFewBoids[i].yPosition);
-            if(distFromBoid < distanceToAvoid && distFromBoid != 0){ // Do not add oneself to the arr this will cause issues
-                this.nearbyBoids.push(aFewBoids[i]);
-            }
-        }
-    }
-
     MoveAwayFromNearbyBoids(){ // Will this work well without a formula for how much angle to change?
         if(this.nearbyBoids.length == 0){
             return; // unneded but here for debugging
@@ -260,9 +312,8 @@ class Boid{
         this.HandleOutOfBounds();
         
         // Display Boid
-        this.DrawBoid();
+        this.DrawShape();
     }
-
 };
 
 function main()
@@ -272,13 +323,13 @@ function main()
 
     // Initialize boids
     for(let i = 0; i < numBoids; i++){
-        aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
+        aFewBoids.push(new Boid2(RandomNumberBetween(0, window.innerWidth), 
         RandomNumberBetween(0, window.innerHeight),
         RandomNumberBetween(4, 5),
         Math.PI/2));
     }
     // for(let i = 0; i < numBoids; i++){
-    //     aFewBoids.push(new Boid(window.innerWidth/2, 
+    //     aFewBoids.push(new Boid2(window.innerWidth/2, 
     //     window.innerHeight/2,
     //     RandomNumberBetween(0, 0),
     //     Math.PI/2));
