@@ -43,7 +43,7 @@ function DistanceBetweenPoints(x1, y1, x2, y2){
 
 //This needs to be changed but its easiest like this rn
 function SetBoidStaticVars(){
-    distanceToAvoid = window.innerWidth / 10; // Make fractoin of diagonal?
+    distanceToAvoid = widthOfBoid * 10; // Make fractoin of diagonal?
     angleChangeTargeting =.05;
     angleChangeAvoiding = .06;
     angleChangeCohesion = .03;
@@ -72,7 +72,7 @@ class BoidScape{
 
     // Globals that I think belong here
     everyBoid = [];
-    nearbyMap = new Map(); // Look into switching to weak map
+    nearbyMap = new WeakMap(); // Weakmap should work but inspect it
 
     // BIG IDEA
     // MAKE A DICTIONARY (MAP IN JS)
@@ -96,13 +96,27 @@ class BoidScape{
     shouldAllign;
     shouldCohere;
 
-
-    constructor(){
+    // HUUUUUGEGEEEE CONSTRUCTOR WITH GIANT LIST OF DEFAULT VALUES
+    constructor(
+    CanvasIn, 
+    NumberOfBoids = 5,
+    Framerate = 60,
+    heightOfBoidFrac = 15, // use as fraction of innerheight window.innerHeight / 15
+    widthOfBoidFrac = 50,
+    distanceToAvoid = 10, // Make Multiple Of Width
+    angleChangeTargeting =.05,
+    angleChangeAvoiding = .06,
+    angleChangeCohesion = .03,
+    angleRandomChange = .1,
+    shouldSeperate = true,
+    shouldAllign = true,
+    shouldCohere = true){
 
     }
 
-    FillCloseMap(){
+    // Setters? / one big setter
 
+    FillCloseMap(){
         this.nearbyMap.clear();
         for(let i = 0; i < this.everyBoid.length; i++){
             this.nearbyMap.set(this.everyBoid[i], []);
@@ -110,16 +124,17 @@ class BoidScape{
 
         for(let curBoid = 0; curBoid < this.everyBoid.length - 1; curBoid++){
             let key = this.everyBoid[curBoid];
+
             for(let restItr = i + 1; i < this.everyBoid.length; restItr++){
 
                 let distFromBoid = DistanceBetweenPoints(key.xPosition, key.yPosition, this.everyBoid[restItr].xPosition, this.everyBoid[restItr].yPosition);
                 if(distFromBoid < distanceToAvoid){
+                    // Could be one line but I this is easier to see for now
                     value = this.nearbyMap.get(key);
                     value.push(this.everyBoid[restItr]);
     
                     this.nearbyMap.set(key, value);
                 }
-
             }
         }
     }
@@ -141,19 +156,20 @@ class BoidScape{
         }
     }
 
-    RunProgram(){
+    // Call in constructor??
+    StartBoidPorgramLoop(){
         var frameCount = 0;
         setInterval(() => {
             this.context.clearRect(0, 0, canvas.width, canvas.height);
-            if(frameCount >= 60){ 
+            if(frameCount >= 60){
                 frameCount = 0;
             }
             frameCount++;
             
-            UpdateAllBoids
+            this.UpdateAllBoids();
 
             // console.log("Ran frame: " + frameCount);
-        }, FrameRateInMsec);
+        }, this.FrameRateInMsec);
     }
 
 };
