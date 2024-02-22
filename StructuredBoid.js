@@ -1,8 +1,10 @@
-// Made by Cameron Pocisk and Cristian Leyva
+// Made by Cameron Pocisk
 
-// Globals from HTML fncalls
+// Globals and html related vars from HTML fncalls
 const canvas = document.getElementById("boidPlane");
 const context = canvas.getContext("2d");
+var mouseXPosition = 1;
+var mouseYPosition = 1;
 
 // Where do these functoins go into?
 function StartProgram(){
@@ -10,13 +12,12 @@ function StartProgram(){
 }
 
 function ReportWindowSize(){
-    // heightOfBoid = window.innerHeight / 15;
-    // widthOfBoid = window.innerWidth / 50;
+    console.log("Resize calledback");
+    // heightOfBoids = window.innerHeight / 15;
+    // widthOfBoids = window.innerWidth / 50;
 }
 
 // Mouse movements
-var mouseXPosition = 0;
-var mouseYPosition = 0;
 function UpdateMouseCoords(event) {
     mouseXPosition = event.clientX;
     mouseYPosition = event.clientY;
@@ -38,24 +39,14 @@ function DistanceBetweenPoints(x1, y1, x2, y2){
     return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 }
 
-//This needs to be changed but its easiest like this rn
-// Shhould be able to remove this
-function SetBoidStaticVars(){
-    distanceToAvoid = 30 * 10; // Make fractoin of diagonal?
-    angleChangeTargeting =.05;
-    angleChangeAvoiding = .06;
-    angleChangeCohesion = .03;
-    angleRandomChange = .1;
-}
-
 class BoidScape{
     // Should not have statics -- instances should be able to be diff.
     // Every instance will hold one var with new possibilities
     // Parameterize all statics
-    widthOfBoid;
-    heightOfBoid;
-    widthOfBoidFrac;
-    heightOfBoidFrac;
+    widthOfBoids;
+    heightOfBoids;
+    // widthOfBoidFrac;
+    // heightOfBoidFrac;
     defaultVelocity;
     distanceToAvoid;
     angleChangeTargeting;
@@ -71,8 +62,6 @@ class BoidScape{
     boidScapeCanvas;
     boidScapeContext; 
     FrameRateInMsec = (1/60) * 1000;
-    // mouseXPosition = 0;
-    // mouseYPosition = 0;
 
     everyBoid = []; // empty dec here?
     numBoids;
@@ -99,8 +88,8 @@ class BoidScape{
     canvasRef,
     numberOfBoids = 5,
     velocityForBoids = 7,
-    heightOfBoidIn = 15,     // fraction of innerheight window.innerHeight
-    widthOfBoidIn = 50,      // fraction of innerheight window.innerWidth
+    widthOfBoidIn = 40,      // fraction of innerheight window.innerWidth
+    heightOfBoidIn = 30,     // fraction of innerheight window.innerHeight
     distanceToAvoidMultIn = 10,  // Make Multiple Of Width
     angleChangeTargetingIn =.05, // How much to turn when following
     angleChangeAvoidingIn = .06, // How much to turn avoiding
@@ -115,10 +104,10 @@ class BoidScape{
         this.numBoids = numberOfBoids;
         // Set statics here to var ins
 
-        this.widthOfBoid = heightOfBoidIn;
-        this.heightOfBoid = widthOfBoidIn;
         this.defaultVelocity = velocityForBoids;
-        this.distanceToAvoid = 30 * distanceToAvoidMultIn; //FIX
+        this.widthOfBoids = widthOfBoidIn;
+        this.heightOfBoids = heightOfBoidIn;
+        this.distanceToAvoid = distanceToAvoidMultIn; // * 30 FIX
         this.angleChangeTargeting = angleChangeTargetingIn;
         this.angleChangeAvoiding = angleChangeAvoidingIn;
         this.angleChangeCohesion = angleChangeCohesionIn;
@@ -128,8 +117,7 @@ class BoidScape{
         this.shouldAllign = shouldAllignIn;
         this.shouldCohere = shouldCohereIn;
 
-        this.InitBoidList();
-        // this.StartBoidProgram();();
+        // this.InitBoidList(); // Should I do this?
     }
 
     InitBoidList(){
@@ -139,59 +127,66 @@ class BoidScape{
             this.everyBoid.push(new Boid(RandomNumberBetween(0, window.innerWidth), //Starting X
             RandomNumberBetween(0, window.innerHeight), // Starting Y
             RandomNumberBetween(0, Math.PI*2), // Starting angle
-            RandomNumberBetween(this.defaultVelocity))); // this.defaultVelocity // Starting velocity
+            this.defaultVelocity)); // this.defaultVelocity // Starting velocity
         }
     }
 
     // Setters? / one big setter
 
-    FillCloseMap(){
-        this.nearbyMap.clear();
-        for(let i = 0; i < this.everyBoid.length; i++){
-            this.nearbyMap.set(this.everyBoid[i], []);
-        }
+    // FillCloseMap(){
+    //     this.nearbyMap.clear();
+    //     for(let i = 0; i < this.everyBoid.length; i++){
+    //         this.nearbyMap.set(this.everyBoid[i], []);
+    //     }
 
-        for(let curBoid = 0; curBoid < this.everyBoid.length - 1; curBoid++){
-            let mainKey = this.everyBoid[curBoid];
+    //     for(let curBoidInd = 0; curBoidInd < this.everyBoid.length - 1; curBoidInd++){
+    //         let mainKey = this.everyBoid[curBoidInd];
 
-            for(let restItr = curBoid + 1; restItr < this.everyBoid.length; restItr++){
+    //         for(let restItr = curBoidInd + 1; restItr < this.everyBoid.length; restItr++){
 
-                let distFromBoid = DistanceBetweenPoints(mainKey.xPosition, mainKey.yPosition, this.everyBoid[restItr].xPosition, this.everyBoid[restItr].yPosition);
-                if(distFromBoid < distanceToAvoid){
-                    // Could be one line but I this is easier to see for now
-                    let mainValue = this.nearbyMap.get(mainKey);
-                    mainValue.push(this.everyBoid[restItr]);
-                    this.nearbyMap.set(mainKey, mainValue);
-                    // Also add curboid boid to the restItr boid
-                    let RelativeBoidKey = this.everyBoid[restItr];
+    //             let distFromBoid = DistanceBetweenPoints(mainKey.xPosition, mainKey.yPosition, this.everyBoid[restItr].xPosition, this.everyBoid[restItr].yPosition);
+    //             if(distFromBoid < this.distanceToAvoid){
+    //                 // Could be one line but I this is easier to see for now
+    //                 let mainValue = this.nearbyMap.get(mainKey);
+    //                 mainValue.push(this.everyBoid[restItr]);
+    //                 this.nearbyMap.set(mainKey, mainValue);
+    //                 // Also add curboid boid to the restItr boid
+    //                 let RelativeBoidKey = this.everyBoid[restItr];
 
-                    let RelativeBoidValue = this.nearbyMap.get(RelativeBoidKey);
-                    RelativeBoidValue.push(this.everyBoid[curBoid]);
-                    this.nearbyMap.set(RelativeBoidKey, RelativeBoidValue);
-                }
-            }
-        }
-    }
+    //                 let RelativeBoidValue = this.nearbyMap.get(RelativeBoidKey);
+    //                 RelativeBoidValue.push(this.everyBoid[curBoidInd]);
+    //                 this.nearbyMap.set(RelativeBoidKey, RelativeBoidValue);
+    //             }
+    //         }
+    //     }
+    // }
 
-    SetKeyNearbyToValue(){
-        // This Calls back on every boid (key) to set its nearby (to value)
-        // If change to weak map forEach does not work and loop throuh arr
-        this.nearbyMap.forEach (function(value, key) {
-            key.nearbyBoids = value;
-        });
-    }
+    // SetKeyNearbyToValue(){
+    //     // This Calls back on every boid (key) to set its nearby (to value)
+    //     // If change to weak map forEach does not work and loop throuh arr
+    //     // this.nearbyMap.forEach (function(value, key) {
+    //     //     key.nearbyBoids = value;
+    //     // });
+    //     for(let i = 0; i < this.everyBoid.length; i++){
+    //         this.everyBoid[i].nearbyBoids = this.nearbyMap.get(this.everyBoid[i]);
+    //     }
+    // }
 
     UpdateAllBoids(){
+        // I believe these should be out of loop
+
+        // Does this need to happen after update?
+        // this.FillCloseMap(); // Get the map
+        // this.SetKeyNearbyToValue(); // Set map elems near lists
+
         for(let i = 0; i < this.everyBoid.length; i++){
             // Fill map for needed info
-            this.FillCloseMap();
-            this.SetKeyNearbyToValue();
             // Update each boid
             this.everyBoid[i].Update(
                 this.boidScapeContext,
                 this.everyBoid,
-                this.widthOfBoid,
-                this.heightOfBoid,
+                this.widthOfBoids,
+                this.heightOfBoids,
                 // this.widthOfBoidFrac,
                 // this.heightOfBoidFrac,
                 // this.distanceToAvoid,
@@ -206,18 +201,18 @@ class BoidScape{
     StartBoidProgram(){
         var frameCount = 0;
         setInterval(() => {
-            this.boidScapeContext.clearRect(0, 0, canvas.width, canvas.height);
+            // this.boidScapeContext.clearRect(0, 0, this.boidScapeCanvas.width, this.boidScapeCanvas.height);
             if(frameCount >= 60){
                 frameCount = 0;
             }
             frameCount++;
             
             this.UpdateAllBoids();
-
+            
+            // This main loop IS updating
             // console.log("Ran frame: " + frameCount);
-        }, this.FrameRateInMsec);
+        }, (1/5) * 1000);
     }
-
 };
 
 
@@ -227,21 +222,26 @@ class DrawableObject{
     angle;
     sinAngle;
     cosAngle;
+
     // Should I extend the constructor for draw functoin?
     constructor(xPosInp, yPosInp, angleInp){
         this.xPosition = xPosInp;
         this.yPosition = yPosInp;
         this.angle = angleInp;
+        console.log("constr log" + this.xPosition);
+        this.CalculateTrigAngleFactors();
     }
-
+    
     CalculateTrigAngleFactors()
     {
         this.angle = (this.angle + 2*Math.PI) % (2*Math.PI); // simplify / wrap angle (0-360)
         this.sinAngle = Math.sin(this.angle);
         this.cosAngle = Math.cos(this.angle);
+        // console.log(this.xPosition);
     }
     // Is triangle rn, can I pass in functons?
-    DrawShape(canvasContext, shapeWidth, shapeHeight){ // 
+    DrawShape(canvasContext, shapeWidth, shapeHeight){ 
+        // console.log(this.xPosition); // THIS IS NAN HERE HELP
         let firstXPoint = this.xPosition + (this.cosAngle * shapeHeight * 1/2);
         let firstYPoint = this.yPosition - (this.sinAngle * shapeHeight * 1/2);
         let secondXPoint= this.xPosition + (-1/2 * ((this.cosAngle * shapeHeight) - this.sinAngle * shapeWidth));
@@ -263,7 +263,7 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
 
     velocity;
     nearbyBoids = []; // Is this too much space or will this just be a ref to an obj so its chill
-    angleChange;
+    angleChange; // needed?
 
     // Calls base constr with inps as well
     constructor(xPosInp, yPosInp, angleInp, velocityInp) {
@@ -278,9 +278,12 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
 
     MoveWithVelocity()
     {
+        // console.log(this.cosAngle);
+        // console.log(this.velocity);
         this.xPosition += this.cosAngle * this.velocity;
         this.yPosition -= this.sinAngle * this.velocity;
     }
+
     RandomAngleChange(andgleDiff){
         this.angleChange += RandomNumberBetween(-1 * andgleDiff, andgleDiff);
         // this.angle += RandomNumberBetween(-1 * angleRandomChange, angleRandomChange);
@@ -347,22 +350,22 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
     //         }
     //     }
     // }
-    DrawLineToAllBoids(allBoids, strokeColor = "#00FF00"){
+    DrawLineToAllBoids(allBoids, canvasContextIn, strokeColor = "#00FF00"){
         for(let i = 0; i < allBoids.length; i++){
-            context.beginPath();
-            context.moveTo(this.xPosition, this.yPosition);
-            context.lineTo(allBoids[i].xPosition, allBoids[i].yPosition);
-            context.strokeStyle = strokeColor;
-            context.stroke();
+            canvasContextIn.beginPath();
+            canvasContextIn.moveTo(this.xPosition, this.yPosition);
+            canvasContextIn.lineTo(allBoids[i].xPosition, allBoids[i].yPosition);
+            canvasContextIn.strokeStyle = strokeColor;
+            canvasContextIn.stroke();
         }
     }
-    DrawLineToNearbyBoids(strokeColor = "#FF0000"){
+    DrawLineToNearbyBoids(canvasContextIn, strokeColor = "#FF0000"){
         for(let i = 0; i < this.nearbyBoids.length; i++){
-            context.beginPath();
-            context.moveTo(this.xPosition, this.yPosition);
-            context.lineTo(this.nearbyBoids[i].xPosition, this.nearbyBoids[i].yPosition);
-            context.strokeStyle = strokeColor;
-            context.stroke();
+            canvasContextIn.beginPath();
+            canvasContextIn.moveTo(this.xPosition, this.yPosition);
+            canvasContextIn.lineTo(this.nearbyBoids[i].xPosition, this.nearbyBoids[i].yPosition);
+            canvasContextIn.strokeStyle = strokeColor;
+            canvasContextIn.stroke();
         }
     }
     MoveAwayFromNearbyBoids(angleDiff){ // Will this work well without a formula for how much angle to change?
@@ -409,19 +412,16 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
         this.angleChange = this.angle;
         this.CalculateTrigAngleFactors();
         
-        // GetNeededInfo (Handled in scape?)
-        // this.GetArrayOfNearbyBoidsFromAll();
-        
         // Visual for nearby
-        this.DrawLineToAllBoids(allBoidsIn);
-        this.DrawLineToNearbyBoids();
+        this.DrawLineToAllBoids(allBoidsIn, canvasContextIn);
+        // this.DrawLineToNearbyBoids(canvasContextIn);
         
         // Handle angle
         this.RandomAngleChange(angleRandomChangeIn); // fun fun
-        this.MoveTowardsCursor(angleChangeTargetingIn); // Cohesion (tweaking)
+        // this.MoveTowardsCursor(angleChangeTargetingIn); // Cohesion (tweaking)
         // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition, distanceToAvoidIn, angleChangeAvoidingIn);
-        this.MoveAwayFromNearbyBoids(angleChangeAvoidingIn); // Seperation
-        this.CoheasionToNearbyAngles(angleChangeCohesionIn); // Allignment 
+        // this.MoveAwayFromNearbyBoids(angleChangeAvoidingIn); // Seperation
+        // this.CoheasionToNearbyAngles(angleChangeCohesionIn); // Allignment 
         this.angle = this.angleChange; // Angle changes do not affect one another (Needed?)
 
         // Handle Movement
@@ -436,42 +436,15 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
 function main()
 {
     SetupCanvas();
-    SetBoidStaticVars();
 
-    const boidSim = new BoidScape(canvas);
+    const boidSim = new BoidScape(canvas, 2); // There is data here
+
+    boidSim.InitBoidList(); // Should I do this?
+    // boidSim.everyBoid[0].CalculateTrigAngleFactors();
+    // boidSim.everyBoid[0].DrawShape(boidSim.boidScapeContext, 30, 40); // This is working at least
     boidSim.StartBoidProgram();
 
 
-    // // Initialize boids
-    // for(let i = 0; i < numBoids; i++){
-    //     aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
-    //     RandomNumberBetween(0, window.innerHeight),
-    //     RandomNumberBetween(4, 5),
-    //     Math.PI/2));
-    // }
-    // for(let i = 0; i < numBoids; i++){
-    //     aFewBoids.push(new Boid(window.innerWidth/2, 
-    //     window.innerHeight/2,
-    //     RandomNumberBetween(0, 0),
-    //     Math.PI/2));
-    // }
-
-    // Start main loop
-    // var frameCount = 0;
-    // setInterval(() => {
-    //     context.clearRect(0, 0, canvas.width, canvas.height);
-    //     if(frameCount >= 60){
-    //         frameCount = 0;
-    //     }
-    //     frameCount++;
-        
-    //     // Do a majority of the work for boid updating
-    //     for(let i = 0; i < numBoids; i++){
-    //         aFewBoids[i].Update();
-    //     }
-
-    //     // console.log("Ran frame: " + frameCount);
-    // }, FrameRateInMsec);
 }
 
 window.addEventListener("load", StartProgram);

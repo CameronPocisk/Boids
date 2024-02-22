@@ -72,6 +72,13 @@ class Boid{
     sinOfBoidAngle;
     cosOfBoidAngle;
     
+    firstXPoint; // Triangle things these got to go soon
+    firstYPoint;
+    secondXPoint;
+    secondYPoint;
+    thirdXPoint;
+    thirdYPoint;
+    
     // Constructor for making boid with different shape functoins
     constructor(xPosInp, yPosInp, velocityInp, angleInp) {
         this.xPosition = xPosInp;
@@ -82,21 +89,23 @@ class Boid{
     }
 
     DrawBoid()
-    {   // Math for drawing an isocolese triangle from its center given its X, Y, Base, Height, Angle. (y acts in neg)
-        let firstXPoint = this.xPosition + (this.cosOfBoidAngle * heightOfBoid * 1/2);
-        let firstYPoint = this.yPosition - (this.sinOfBoidAngle * heightOfBoid * 1/2);
-        let secondXPoint= this.xPosition + (-1/2 * ((this.cosOfBoidAngle * heightOfBoid) - this.sinOfBoidAngle * widthOfBoid));
-        let secondYPoint= this.yPosition - (-1/2 * ((this.sinOfBoidAngle * heightOfBoid) + this.cosOfBoidAngle * widthOfBoid));
-        let thirdXPoint = this.xPosition + (-1/2 * ((this.cosOfBoidAngle * heightOfBoid) + this.sinOfBoidAngle * widthOfBoid));
-        let thirdYPoint = this.yPosition - (-1/2 * ((this.sinOfBoidAngle * heightOfBoid) - this.cosOfBoidAngle * widthOfBoid));
-
+    { // Draws from the center of the boid
         context.beginPath();
 
-        context.moveTo(firstXPoint, firstYPoint);
-        context.lineTo(secondXPoint, secondYPoint);
-        context.lineTo(thirdXPoint, thirdYPoint);
+        context.moveTo(this.firstXPoint, this.firstYPoint);
+        context.lineTo(this.secondXPoint, this.secondYPoint);
+        context.lineTo(this.thirdXPoint, this.thirdYPoint);
         context.fillStyle = "#56554E";
         context.fill();
+    }
+    UpdateTriangleCoordinates()
+    {   // Math for drawing an isocolese triangle from its center given its X, Y, Base, Height, Angle. (y acts in neg)
+        this.firstXPoint = this.xPosition + (this.cosOfBoidAngle * heightOfBoid * 1/2);
+        this.firstYPoint = this.yPosition - (this.sinOfBoidAngle * heightOfBoid * 1/2);
+        this.secondXPoint= this.xPosition + (-1/2 * ((this.cosOfBoidAngle * heightOfBoid) - this.sinOfBoidAngle * widthOfBoid));
+        this.secondYPoint= this.yPosition - (-1/2 * ((this.sinOfBoidAngle * heightOfBoid) + this.cosOfBoidAngle * widthOfBoid));
+        this.thirdXPoint = this.xPosition + (-1/2 * ((this.cosOfBoidAngle * heightOfBoid) + this.sinOfBoidAngle * widthOfBoid));
+        this.thirdYPoint = this.yPosition - (-1/2 * ((this.sinOfBoidAngle * heightOfBoid) - this.cosOfBoidAngle * widthOfBoid));
     }
 
     HandleOutOfBounds(){ // Uses modulous to ensure that it stays within the bounds. works all directoins with plus screenSize and mod
@@ -189,7 +198,9 @@ class Boid{
             context.moveTo(this.xPosition, this.yPosition);
             context.lineTo(aFewBoids[i].xPosition, aFewBoids[i].yPosition);
             context.strokeStyle = "#00FF00";
+            //context.globalAlpha = .5
             context.stroke();
+            //context.globalAlpha = 1
         }
     }
     DrawLineToNearbyBoids(){
@@ -198,7 +209,10 @@ class Boid{
             context.moveTo(this.xPosition, this.yPosition);
             context.lineTo(this.nearbyBoids[i].xPosition, this.nearbyBoids[i].yPosition);
             context.strokeStyle = "#FF0000";
+            // context.globalAlpha = .5
             context.stroke();
+            //context.globalAlpha = 1
+
         }
     }
 
@@ -217,11 +231,12 @@ class Boid{
             return; // unneded but here for debugging
         }
         for(let i = 0; i < this.nearbyBoids.length; i++){
+            console.log("Boids are nearby moving away");
             this.MoveAwayFromCoords(this.nearbyBoids[i].xPosition, this.nearbyBoids[i].yPosition, angleChangeAvoiding);
         }
     }
 
-    CoheasionToNearbyAngles(){ // Change this function, maybe to get further away boids
+    CoheasionToNearbyAngles(){
         if(this.nearbyBoids.length == 0){
             return; // early exit
         }
@@ -240,7 +255,7 @@ class Boid{
         this.angleChange = this.angle;
         this.CalculateTrigAngleFactors();
         
-        // GetNeededInfo
+        // GetNeededInfo from nearby
         this.GetArrayOfNearbyBoidsFromAll();
         
         // Visual for nearby
@@ -252,14 +267,16 @@ class Boid{
         this.MoveTowardsCursor(); // Cohesion (tweaking)
         // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition);
         this.MoveAwayFromNearbyBoids(); // Seperation
-        this.CoheasionToNearbyAngles(); // Allignment 
-        this.angle = this.angleChange; // Angle changes do not affect one another (Needed?)
+        this.CoheasionToNearbyAngles(); // Allignment
+
+        this.angle = this.angleChange; // Angle changes do not affect one another
 
         // Handle Movement
         this.MoveWithVelocity();
         this.HandleOutOfBounds();
         
         // Display Boid
+        this.UpdateTriangleCoordinates();
         this.DrawBoid();
     }
 
@@ -271,6 +288,7 @@ function main()
     SetBoidStaticVars();
 
     // Initialize boids
+
     for(let i = 0; i < numBoids; i++){
         aFewBoids.push(new Boid(RandomNumberBetween(0, window.innerWidth), 
         RandomNumberBetween(0, window.innerHeight),
@@ -295,7 +313,9 @@ function main()
         
         // Do a majority of the work for boid updating
         for(let i = 0; i < numBoids; i++){
+            aFewBoids[i].GetArrayOfNearbyBoidsFromAll(aFewBoids);
             aFewBoids[i].Update();
+            // aFewBoids[i].DrawLineToAllBoids(aFewBoids);
         }
 
         // console.log("Ran frame: " + frameCount);
