@@ -51,6 +51,16 @@ function SetBoidStaticVars(){
 }
 
 class BoidScape{
+
+    //Statics that may want to be moved to normal vars here
+    // static widthOfBoid;
+    // static heightOfBoid;
+    // static distanceToAvoid;
+    // static angleChangeTargeting;
+    // static angleChangeAvoiding;
+    // static angleChangeCohesion;
+    // static angleRandomChange;
+
     // These are globals from main program
     canvas = document.getElementById("boidPlane");
     context = canvas.getContext("2d");
@@ -58,9 +68,11 @@ class BoidScape{
     mouseXPosition = 0;
     mouseYPosition = 0;
 
+    // Statics from boids that should go in here
+
     // Globals that I think belong here
     everyBoid = [];
-    nearbyMap = new Map();
+    nearbyMap = new Map(); // Look into switching to weak map
 
     // BIG IDEA
     // MAKE A DICTIONARY (MAP IN JS)
@@ -90,7 +102,58 @@ class BoidScape{
     }
 
     FillCloseMap(){
+
         this.nearbyMap.clear();
+        for(let i = 0; i < this.everyBoid.length; i++){
+            this.nearbyMap.set(this.everyBoid[i], []);
+        }
+
+        for(let curBoid = 0; curBoid < this.everyBoid.length - 1; curBoid++){
+            let key = this.everyBoid[curBoid];
+            for(let restItr = i + 1; i < this.everyBoid.length; restItr++){
+
+                let distFromBoid = DistanceBetweenPoints(key.xPosition, key.yPosition, this.everyBoid[restItr].xPosition, this.everyBoid[restItr].yPosition);
+                if(distFromBoid < distanceToAvoid){
+                    value = this.nearbyMap.get(key);
+                    value.push(this.everyBoid[restItr]);
+    
+                    this.nearbyMap.set(key, value);
+                }
+
+            }
+        }
+    }
+
+    SetKeyNearbyToValue(){
+        // This Calls back on every boid (key) to set its nearby (to value)
+        this.nearbyMap.forEach (function(value, key) {
+            key.nearbyBoids = value;
+        })
+    }
+
+    UpdateAllBoids(){
+        for(let i = 0; i < this.everyBoid.length; i++){
+            // Fill map for needed info
+            this.FillCloseMap();
+            this.SetKeyNearbyToValue();
+            // Update each boid
+            this.everyBoid[i].Update();
+        }
+    }
+
+    RunProgram(){
+        var frameCount = 0;
+        setInterval(() => {
+            this.context.clearRect(0, 0, canvas.width, canvas.height);
+            if(frameCount >= 60){ 
+                frameCount = 0;
+            }
+            frameCount++;
+            
+            UpdateAllBoids
+
+            // console.log("Ran frame: " + frameCount);
+        }, FrameRateInMsec);
     }
 
 };
@@ -284,6 +347,10 @@ class Boid2 extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM I
         this.nearbyBoidAngleAvg /= this.nearbyBoids.length;
         // Relative angle as coordinate away from boid. 
         this.MoveToCoords(this.xPosition + Math.cos(nearbyBoidAngleAvg), this.yPosition + Math.sin(nearbyBoidAngleAvg), angleChangeCohesion);
+    }
+
+    SetNearbyBoidListTo(nearbyIn){
+        this.nearbyBoids = nearbyIn;
     }
 
     Update()
