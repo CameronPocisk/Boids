@@ -17,12 +17,6 @@ function ReportWindowSize(){
     // widthOfBoids = window.innerWidth / 50;
 }
 
-// Mouse movements
-function UpdateMouseCoords(event) {
-    mouseXPosition = event.clientX;
-    mouseYPosition = event.clientY;
-}
-
 function SetupCanvas(){
     console.log("Running Program (Hello Strucutred Boids)");
 
@@ -163,8 +157,8 @@ class BoidScape{
     }
 
     FillCloseMap(){
-        // this.nearbyMap.clear();
-        this.nearbyMap = new WeakMap();
+        // Should I try to run this every few frames?
+        // this.nearbyMap = new WeakMap();
         for(let i = 0; i < this.everyBoid.length; i++){
             this.nearbyMap.set(this.everyBoid[i], []);
         }
@@ -197,36 +191,18 @@ class BoidScape{
     SetKeyNearbyToValue(){
         // This Calls back on every boid (key) to set its nearby (to value)
         // If change to weak map forEach does not work and loop throuh arr
-        // this.nearbyMap.forEach (function(value, key) {
-        //     key.nearbyBoids = value;
-        // });
         for(let i = 0; i < this.everyBoid.length; i++){
             this.everyBoid[i].nearbyBoids = this.nearbyMap.get(this.everyBoid[i]);
         }
     }
 
-    UpdateAllBoids(){
-        // I believe these should be out of loop
-
-        // Does this need to happen after update?
+    UpdateAllBoids()
+    {
         this.FillCloseMap(); // Get the map
         this.SetKeyNearbyToValue(); // Set map elems near lists
 
         for(let i = 0; i < this.everyBoid.length; i++){
-            // Fill map for needed info
-            // Update each boid
-            this.everyBoid[i].Update(
-                this.boidScapeContext,
-                this.everyBoid,
-                this.widthOfBoids,
-                this.heightOfBoids,
-                // this.widthOfBoidFrac,
-                // this.heightOfBoidFrac,
-                // this.distanceToAvoid,
-                this.angleChangeTargeting,
-                this.angleChangeAvoiding,
-                this.angleChangeCohesion,
-                this.angleRandomChange);
+            this.everyBoid[i].Update(this);
         }
     }
 
@@ -360,8 +336,8 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
             this.angleChange += angleDiff; 
         }
     }
-    MoveTowardsCursor(angleDiff){ 
-        this.MoveToCoords(mouseXPosition, mouseYPosition, angleDiff); 
+    MoveTowardsCursor(mouseXIn, MouseYIn, angleDiff){ 
+        this.MoveToCoords(mouseXIn, MouseYIn, angleDiff); 
     } // Add fun thing for mouse off screen?
 
     MoveAwayFromObjectIfClose(objX, objY, avoidDist, angleDiff){  //distanceToAvoid
@@ -414,34 +390,23 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
     //     this.nearbyBoids = nearbyIn;
     // }
 
-    Update(
-        canvasContextIn,
-        allBoidsIn,
-        widthOfBoidIn,
-        heightOfBoidIn,
-        // widthOfBoidFracIn,
-        // heightOfBoidFracIn,
-        // distanceToAvoidIn,
-        angleChangeTargetingIn,
-        angleChangeAvoidingIn,
-        angleChangeCohesionIn,
-        angleRandomChangeIn,
-    )
+    Update(boidScapeIn)
     {
         //First calculations
         this.angleChange = this.angle;
         this.CalculateTrigAngleFactors();
         
         // Visual for nearby
-        this.DrawLineToAllBoids(allBoidsIn, canvasContextIn);
-        this.DrawLineToNearbyBoids(canvasContextIn);
+        this.DrawLineToAllBoids(boidScapeIn.everyBoid, boidScapeIn.boidScapeContext);
+        this.DrawLineToNearbyBoids(boidScapeIn.boidScapeContext);
         
         // Handle angle
-        this.RandomAngleChange(angleRandomChangeIn); // fun fun
-        this.MoveTowardsCursor(angleChangeTargetingIn); // Cohesion (tweaking)
+        this.RandomAngleChange(boidScapeIn.angleRandomChange); // fun fun
+        // this.MoveTowardsCursor(boidScapeIn.angleChangeTargeting); // Cohesion (tweaking)
+        this.MoveTowardsCursor(boidScapeIn.mouseX, boidScapeIn.mouseY, boidScapeIn.angleChangeTargeting); // Cohesion (tweaking)
         // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition, distanceToAvoidIn, angleChangeAvoidingIn);
-        this.MoveAwayFromNearbyBoids(angleChangeAvoidingIn); // Seperation
-        this.CoheasionToNearbyAngles(angleChangeCohesionIn); // Allignment 
+        this.MoveAwayFromNearbyBoids(boidScapeIn.angleChangeAvoiding); // Seperation
+        this.CoheasionToNearbyAngles(boidScapeIn.angleChangeCohesion); // Allignment 
         this.angle = this.angleChange; // Angle changes do not affect one another (Needed?)
 
         // Handle Movement
@@ -449,7 +414,7 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
         this.HandleOutOfBounds();
         
         // Display Boid
-        this.DrawShape(canvasContextIn, widthOfBoidIn, heightOfBoidIn);
+        this.DrawShape(boidScapeIn.boidScapeContext, boidScapeIn.widthOfBoids, boidScapeIn.heightOfBoids);
     }
 };
 
