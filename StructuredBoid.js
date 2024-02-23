@@ -51,6 +51,10 @@ class BoidScape{
     shouldSeperate;
     shouldAllign;
     shouldCohere;
+    nearStrokeColor;
+    allStrokeColor;
+    boidColor;
+    backgroundColor;
 
     mouseX;
     mouseY;
@@ -94,20 +98,30 @@ class BoidScape{
     angleRandomChangeIn = .1,    // How much to turn randomly
     shouldSeperateIn = true,
     shouldAllignIn = true,
-    shouldCohereIn = true){
+    shouldCohereIn = true,
+    nearStrokeColorIn = "#FFFFFF",
+    allStrokeColorIn = "#50409A",
+    boidColorIn = "#964EC2",
+    backgroundColorIn = "#272530",){
 
         this.boidScapeCanvas = canvasRef;
         this.boidScapeContext = this.boidScapeCanvas.getContext("2d");
+        this.boidScapeCanvas.style.backgroundColor = backgroundColorIn
         this.numBoids = numberOfBoids;
         // Set statics here to var ins
 
         this.defaultVelocity = velocityForBoids;
 
+        //Styling
         this.widthOfBoids = this.boidScapeCanvas.height / widthOfBoidDenomIn;
         this.heightOfBoids = this.boidScapeCanvas.height / heightOfBoidDenomIn;
         this.widthOfBoidFrac = widthOfBoidDenomIn;
         this.heightOfBoidFrac = heightOfBoidDenomIn;
+        this.nearStrokeColor = nearStrokeColorIn;
+        this.allStrokeColor = allStrokeColorIn;
+        this.boidColor = boidColorIn;
 
+        // Functionality
         this.distanceToAvoid = distanceToAvoidMultIn; // * 30 FIX
         this.angleChangeTargeting = angleChangeTargetingIn;
         this.angleChangeAvoiding = angleChangeAvoidingIn;
@@ -247,7 +261,7 @@ class DrawableObject{
         this.cosAngle = Math.cos(this.angle);
     }
     // Is triangle rn, can I pass in functons?
-    DrawShape(canvasContext, shapeWidth, shapeHeight){ 
+    DrawShape(canvasContext, shapeWidth, shapeHeight, shapeColor){ 
         let firstXPoint = this.xPosition + (this.cosAngle * shapeHeight * 1/2);
         let firstYPoint = this.yPosition - (this.sinAngle * shapeHeight * 1/2);
         let secondXPoint= this.xPosition + (-1/2 * ((this.cosAngle * shapeHeight) - this.sinAngle * shapeWidth));
@@ -260,7 +274,7 @@ class DrawableObject{
         canvasContext.moveTo(firstXPoint, firstYPoint);
         canvasContext.lineTo(secondXPoint, secondYPoint);
         canvasContext.lineTo(thirdXPoint, thirdYPoint);
-        canvasContext.fillStyle = "#56554E";
+        canvasContext.fillStyle = shapeColor;
         canvasContext.fill();
     }
 }
@@ -346,7 +360,7 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
         }
     }
 
-    DrawLineToAllBoids(allBoids, canvasContextIn, strokeColor = "#00FF00"){
+    DrawLineToAllBoids(allBoids, canvasContextIn, strokeColor){
         for(let i = 0; i < allBoids.length; i++){
             canvasContextIn.beginPath();
             canvasContextIn.moveTo(this.xPosition, this.yPosition);
@@ -355,7 +369,7 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
             canvasContextIn.stroke();
         }
     }
-    DrawLineToNearbyBoids(canvasContextIn, strokeColor = "#FF0000"){
+    DrawLineToNearbyBoids(canvasContextIn, strokeColor){
         for(let i = 0; i < this.nearbyBoids.length; i++){
             canvasContextIn.beginPath();
             canvasContextIn.moveTo(this.xPosition, this.yPosition);
@@ -397,8 +411,8 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
         this.CalculateTrigAngleFactors();
         
         // Visual for nearby
-        this.DrawLineToAllBoids(boidScapeIn.everyBoid, boidScapeIn.boidScapeContext);
-        this.DrawLineToNearbyBoids(boidScapeIn.boidScapeContext);
+        this.DrawLineToAllBoids(boidScapeIn.everyBoid, boidScapeIn.boidScapeContext, boidScapeIn.allStrokeColor);
+        this.DrawLineToNearbyBoids(boidScapeIn.boidScapeContext, boidScapeIn.nearStrokeColor);
         
         // Handle angle
         this.RandomAngleChange(boidScapeIn.angleRandomChange); // fun fun
@@ -414,7 +428,7 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
         this.HandleOutOfBounds();
         
         // Display Boid
-        this.DrawShape(boidScapeIn.boidScapeContext, boidScapeIn.widthOfBoids, boidScapeIn.heightOfBoids);
+        this.DrawShape(boidScapeIn.boidScapeContext, boidScapeIn.widthOfBoids, boidScapeIn.heightOfBoids, boidScapeIn.boidColor);
     }
 };
 
@@ -422,7 +436,26 @@ function main()
 {
     SetupCanvas();
 
-    const boidSim = new BoidScape(canvas, 5); // There is data here
+    // const boidSim = new BoidScape(canvas, 5); // There is data here
+    const boidSim = new BoidScape(
+        canvas,
+        5,
+        5,
+        30,    // fraction of innerheight window.innerWidth
+        15,    // fraction of innerheight window.innerHeight
+        200,   // Make Multiple Of Width
+        .05,   // How much to turn when following
+        .10,   // How much to turn avoiding
+        .03,   // How much to turn to cohere
+        .1,    // How much to turn randomly
+        true,
+        true,
+        true,
+        "#FFFFFF",
+        "#50409A",
+        "#964EC2",
+        "#272530",
+        ); // There is data here
 
     boidSim.InitBoidList(); // Should I do this?
     // boidSim.everyBoid[0].CalculateTrigAngleFactors();

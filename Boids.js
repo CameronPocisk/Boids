@@ -95,7 +95,7 @@ class Boid{
         context.moveTo(this.firstXPoint, this.firstYPoint);
         context.lineTo(this.secondXPoint, this.secondYPoint);
         context.lineTo(this.thirdXPoint, this.thirdYPoint);
-        context.fillStyle = "#b51414";
+        context.fillStyle = "#56554E";
         context.fill();
     }
     UpdateTriangleCoordinates()
