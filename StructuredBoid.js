@@ -10,7 +10,6 @@ function StartProgram(){
 
 // Not in Boids becuase the size of the dom should be controlled by the user
 function ReportWindowSize(){
-    console.log("Window resize");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
@@ -20,15 +19,6 @@ function SetupCanvas(){
 
     window.addEventListener("resize", ReportWindowSize);
     ReportWindowSize();
-}
-
-
-// Put these in boidscape?
-function RandomNumberBetween(min, max){
-    return min + Math.random() * (max - min);
-}
-function DistanceBetweenPoints(x1, y1, x2, y2){
-    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 }
 
 class BoidScape{
@@ -66,19 +56,17 @@ class BoidScape{
     everyBoid = []; // empty dec here?
     numBoids;
 
-    // HUUUUUGEGEEEE CONSTRUCTOR WITH GIANT LIST OF DEFAULT VALUES
-    // framerate = 60,
     constructor(
     canvasRef,
     numberOfBoids = 5,
     velocityForBoids = 5,         // Speed of each boid
     distanceToAvoidMultIn = 200,  // Make Multiple Of Width
     angleChangeTargetingIn =.05,  // How much to turn when following
-    angleChangeAvoidingIn = .06,  // How much to turn avoiding
+    angleChangeAvoidingIn = .08,  // How much to turn avoiding
     angleChangeCohesionIn = .03,  // How much to turn to cohere
-    angleRandomChangeIn = .1,     // How much to turn randomly
-    widthOfBoidDenomIn = 30,      // fraction of canvas width
-    heightOfBoidDenomIn = 15,     // fraction of canvas height
+    angleRandomChangeIn = .10,    // How much to turn randomly
+    widthOfBoidDenomIn = 50,      // fraction of canvas width
+    heightOfBoidDenomIn = 25,     // fraction of canvas height
     nearStrokeColorIn = "#FFFFFF",
     allStrokeColorIn = "#50409A",
     boidColorIn = "#964EC2",
@@ -120,6 +108,7 @@ class BoidScape{
         
         this.reportResize = this.reportResize.bind(this);
         window.addEventListener('resize', this.reportResize); // This should not be in my thing I think but maybe not
+        this.reportResize();
 
         this.InitBoidList(); // Should I do this?
     }
@@ -129,17 +118,29 @@ class BoidScape{
         this.mouseY = event.clientY;
     }
     reportResize(event){
-        this.widthOfBoids = this.boidScapeCanvas.width / this.widthOfBoidFrac;
-        this.heightOfBoids = this.boidScapeCanvas.height / this.heightOfBoidFrac;        
+        let canvasDiagonal = Math.sqrt(this.boidScapeCanvas.width**2 + this.boidScapeCanvas.height**2); 
+        this.widthOfBoids = canvasDiagonal  / this.widthOfBoidFrac;
+        this.heightOfBoids = canvasDiagonal / this.heightOfBoidFrac;        
+    }
+
+    // Calculation stuff / member functions used
+    RandomNumberBetween(min, max){
+        return min + Math.random() * (max - min);
+    }
+    DistanceBetweenPoints(x1, y1, x2, y2){
+        return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
     }
 
     InitBoidList(){
         //Reinitialize the boid arr from constants
         this.everyBoid = [];
         for(let i = 0; i < this.numBoids; i++){
-            this.everyBoid.push(new Boid(RandomNumberBetween(0, this.boidScapeCanvas.width), //Starting X
-            RandomNumberBetween(0, this.boidScapeCanvas.height), // Starting Y
-            RandomNumberBetween(0, Math.PI*2), // Starting angle
+            this.everyBoid.push(new Boid
+            // (this.RandomNumberBetween(0, this.boidScapeCanvas.width), //Starting X
+            // this.RandomNumberBetween(0, this.boidScapeCanvas.height), // Starting Y
+            (this.boidScapeCanvas.width/2, //Starting X
+            this.boidScapeCanvas.height/2, // Starting Y
+            this.RandomNumberBetween(0, Math.PI*2), // Starting angle
             this.defaultVelocity)); // Velocity
         }
     }
@@ -160,8 +161,7 @@ class BoidScape{
                 let RelativeBoidKey = this.everyBoid[restItr];
                 let RelativeBoidValue = this.nearbyMap.get(RelativeBoidKey);
                 
-
-                let distFromBoid = DistanceBetweenPoints(mainKey.xPosition, mainKey.yPosition, RelativeBoidKey.xPosition, RelativeBoidKey.yPosition);
+                let distFromBoid = this.DistanceBetweenPoints(mainKey.xPosition, mainKey.yPosition, RelativeBoidKey.xPosition, RelativeBoidKey.yPosition);
                 if(distFromBoid < this.distanceToAvoid){
                     // Could be one line but I this is easier to see for now
                     mainValue.push(RelativeBoidKey);
@@ -176,7 +176,6 @@ class BoidScape{
 
     SetKeyNearbyToValue(){
         // This Calls back on every boid (key) to set its nearby (to value)
-        // If change to weak map forEach does not work and loop throuh arr
         for(let i = 0; i < this.everyBoid.length; i++){
             this.everyBoid[i].nearbyBoids = this.nearbyMap.get(this.everyBoid[i]);
         }
@@ -185,7 +184,7 @@ class BoidScape{
     UpdateAllBoids()
     {
         this.FillCloseMap(); // Get the map
-        this.SetKeyNearbyToValue(); // Set map elems near lists
+        this.SetKeyNearbyToValue(); // Set map elems nearbyLists
 
         for(let i = 0; i < this.everyBoid.length; i++){
             this.everyBoid[i].Update(this);
@@ -249,10 +248,10 @@ class DrawableObject{
     }
 }
 
-class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
+class Boid extends DrawableObject{
 
     velocity;
-    nearbyBoids = []; // Is this too much space or will this just be a ref to an obj so its chill
+    nearbyBoids = [];
     angleChange; // needed?
 
     // Calls base constr with inps as well
@@ -260,21 +259,22 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
         super(xPosInp, yPosInp, angleInp);
         this.velocity = velocityInp;
     }
-
-    HandleOutOfBounds(canvasIn){ // Uses modulous to ensure that it stays within the bounds. works all directoins with plus screenSize and mod
-        this.xPosition = (this.xPosition + canvasIn.width) % canvasIn.width;
-        this.yPosition = (this.yPosition + canvasIn.height) % canvasIn.height;
-    }
-
     MoveWithVelocity()
     {
         this.xPosition += this.cosAngle * this.velocity;
         this.yPosition -= this.sinAngle * this.velocity;
     }
 
-    RandomAngleChange(andgleDiff){
-        this.angleChange += RandomNumberBetween(-1 * andgleDiff, andgleDiff);
+    HandleOutOfBounds(canvasIn){ // Uses modulous to ensure that it stays within the bounds. works all directoins with plus screenSize and mod
+        this.xPosition = (this.xPosition + canvasIn.width) % canvasIn.width;
+        this.yPosition = (this.yPosition + canvasIn.height) % canvasIn.height;
     }
+
+
+    RandomAngleChange(andgleDiff, randomFn){
+        this.angleChange += randomFn(-1 * andgleDiff, andgleDiff);
+    }
+
     MoveToCoords(coordX, coordY, angleDiff){ // make into  helpers
         //Find angle using arctan
         let relativeXPosition = coordX - this.xPosition;
@@ -290,11 +290,9 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
         }
         // console.log("Boid in deg: " + this.angle * 180 / Math.PI); console.log("Angle from : " + angleFromBoid * 180 / Math.PI);
         if((angleFromBoid > this.angle && angleFromBoid < this.angle + Math.PI) || angleFromBoid < this.angle - Math.PI){
-            // this.angle += angleDiff; // Turn left
             this.angleChange += angleDiff;
         }
         else{
-            // this.angle -= angleDiff; // Turn right
             this.angleChange -= angleDiff;
         }
     }
@@ -311,20 +309,18 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
             angleFromBoid += Math.PI*2;
         }
         if((angleFromBoid > this.angle && angleFromBoid < this.angle + Math.PI) || angleFromBoid < this.angle - Math.PI){
-            // this.angle -= angleDiff; // Turn Right
             this.angleChange -= angleDiff;
         }
         else{
-            // this.angle += angleDiff; // Turn Left
             this.angleChange += angleDiff; 
         }
     }
+
     MoveTowardsCursor(mouseXIn, MouseYIn, angleDiff){ 
         this.MoveToCoords(mouseXIn, MouseYIn, angleDiff); 
     } // Add fun thing for mouse off screen?
-
-    MoveAwayFromObjectIfClose(objX, objY, avoidDist, angleDiff){
-        if(DistanceBetweenPoints(this.xPosition, this.yPosition, objX, objY) < avoidDist){
+    MoveAwayFromObjectIfClose(objX, objY, avoidDist, angleDiff, distFn){
+        if(distFn(this.xPosition, this.yPosition, objX, objY) < avoidDist){
             this.MoveAwayFromCoords(objX, objY, angleDiff);
         }
     }
@@ -349,13 +345,11 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
     }
 
     MoveAwayFromNearbyBoids(angleDiff){ // Will this work well without a formula for how much angle to change?
-        // if(this.nearbyBoids.length == 0){
-        //     return; // unneeded but here for debugging
-        // }
         for(let i = 0; i < this.nearbyBoids.length; i++){
             this.MoveAwayFromCoords(this.nearbyBoids[i].xPosition, this.nearbyBoids[i].yPosition, angleDiff);
         }
     }
+    
     CoheasionToNearbyAngles(angleDiff){ // Change this function, maybe to get further away boids
         if(this.nearbyBoids.length == 0){
             return; // early exit
@@ -380,9 +374,9 @@ class Boid extends DrawableObject{ // BOID IS A DRAWABLE OBJECT INHHERIT FROM IT
         this.DrawLineToNearbyBoids(boidScapeIn.boidScapeContext, boidScapeIn.nearStrokeColor);
         
         // Handle angle
-        this.RandomAngleChange(boidScapeIn.angleRandomChange); // fun fun
+        this.RandomAngleChange(boidScapeIn.angleRandomChange, boidScapeIn.RandomNumberBetween); // fun fun
         this.MoveTowardsCursor(boidScapeIn.mouseX, boidScapeIn.mouseY, boidScapeIn.angleChangeTargeting); // Cohesion (tweaking)
-        // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition, distanceToAvoidIn, angleChangeAvoidingIn);
+        // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition, distanceToAvoidIn, angleChangeAvoidingIn, boidScapeIn.DistanceBetweenPoints);
         this.MoveAwayFromNearbyBoids(boidScapeIn.angleChangeAvoiding); // Seperation
         this.CoheasionToNearbyAngles(boidScapeIn.angleChangeCohesion); // Allignment 
         this.angle = this.angleChange; // Angle changes do not affect one another (Needed?)
@@ -400,26 +394,26 @@ function main()
 {
     SetupCanvas();
 
-    // const boidSim = new BoidScape(canvas, 5); // There is data here
-    const boidSim = new BoidScape(
-        canvas,
-        5,
-        5,
-        200,   // Make Multiple Of Width
-        .05,   // How much to turn when following
-        .10,   // How much to turn avoiding
-        .03,   // How much to turn to cohere
-        .1,    // How much to turn randomly
-        30,    // fraction of innerheight window.innerWidth
-        15,    // fraction of innerheight window.innerHeight
-        "#FFFFFF",
-        "#50409A",
-        "#964EC2",
-        "#272530",
-        true,
-        true,
-        true,
-        );
+    const boidSim = new BoidScape(canvas, 5); // There is data here
+    // const boidSim = new BoidScape(
+    //     canvas,
+    //     5,
+    //     5,
+    //     200,   // Make Multiple Of Width
+    //     .05,   // How much to turn when following
+    //     .10,   // How much to turn avoiding
+    //     .03,   // How much to turn to cohere
+    //     .1,    // How much to turn randomly
+    //     40,    // fraction of innerheight window.innerWidth
+    //     20,    // fraction of innerheight window.innerHeight
+    //     "#FFFFFF",
+    //     "#50409A",
+    //     "#964EC2",
+    //     "#272530",
+    //     true,
+    //     true,
+    //     true
+    //     );
 
     // boidSim.InitBoidList(); // Should I do this? (Done in constructor rn)
     // boidSim.everyBoid[0].CalculateTrigAngleFactors();
