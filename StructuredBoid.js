@@ -58,13 +58,13 @@ class BoidScape{
 
     constructor(
     canvasRef,
-    numberOfBoids = 5,
+    numberOfBoids = 6,
     velocityForBoids = 5,         // Speed of each boid
-    distanceToAvoidMultIn = 200,  // Make Multiple Of Width
+    distanceToAvoidMultIn = 150,  // Make Multiple Of Width
     angleChangeTargetingIn =.05,  // How much to turn when following
-    angleChangeAvoidingIn = .08,  // How much to turn avoiding
+    angleChangeAvoidingIn = .12,  // How much to turn avoiding
     angleChangeCohesionIn = .03,  // How much to turn to cohere
-    angleRandomChangeIn = .10,    // How much to turn randomly
+    angleRandomChangeIn = .04,    // How much to turn randomly
     widthOfBoidDenomIn = 50,      // fraction of canvas width
     heightOfBoidDenomIn = 25,     // fraction of canvas height
     nearStrokeColorIn = "#FFFFFF",
@@ -73,7 +73,9 @@ class BoidScape{
     backgroundColorIn = "#272530",
     shouldSeperateIn = true,
     shouldAllignIn = true,
-    shouldCohereIn = true){
+    shouldCohereIn = true,
+    shouldDrawToNearIn = true,
+    shouldDrawToAlleIn = true){
 
         // General Items
         this.boidScapeCanvas = canvasRef;
@@ -349,7 +351,7 @@ class Boid extends DrawableObject{
             this.MoveAwayFromCoords(this.nearbyBoids[i].xPosition, this.nearbyBoids[i].yPosition, angleDiff);
         }
     }
-    
+
     CoheasionToNearbyAngles(angleDiff){ // Change this function, maybe to get further away boids
         if(this.nearbyBoids.length == 0){
             return; // early exit
@@ -394,18 +396,20 @@ function main()
 {
     SetupCanvas();
 
-    const boidSim = new BoidScape(canvas, 5); // There is data here
+    const boidSim = new BoidScape(canvas, 4); // There is data here
+    // const boidSim = new BoidScape(canvas,6,5,150,.05,.15,.03,.05,50,25,"#FFFFFF","#50409A","#964EC2","#272530",true,true,true);
+
     // const boidSim = new BoidScape(
     //     canvas,
     //     5,
     //     5,
-    //     200,   // Make Multiple Of Width
+    //     150,   // Make Multiple Of Width
     //     .05,   // How much to turn when following
-    //     .10,   // How much to turn avoiding
+    //     .15,   // How much to turn avoiding
     //     .03,   // How much to turn to cohere
-    //     .1,    // How much to turn randomly
-    //     40,    // fraction of innerheight window.innerWidth
-    //     20,    // fraction of innerheight window.innerHeight
+    //     .05,    // How much to turn randomly
+    //     50,    // fraction of innerheight window.innerWidth
+    //     25,    // fraction of innerheight window.innerHeight
     //     "#FFFFFF",
     //     "#50409A",
     //     "#964EC2",
@@ -414,13 +418,7 @@ function main()
     //     true,
     //     true
     //     );
-
-    // boidSim.InitBoidList(); // Should I do this? (Done in constructor rn)
-    // boidSim.everyBoid[0].CalculateTrigAngleFactors();
-    // boidSim.everyBoid[0].DrawShape(boidSim.boidScapeContext, 30, 40); // This is working at least
     boidSim.StartBoidProgram();
-
 }
 
 window.addEventListener("load", StartProgram); // maybe dont need this
-// main();
