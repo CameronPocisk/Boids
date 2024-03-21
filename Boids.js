@@ -93,10 +93,12 @@ class BoidScape{
     }
 
     reportMousePosition(event) {
-        this.mouseX = event.clientX;
-        this.mouseY = event.clientY;
+        var containerRect = this.boidScapeCanvas.getBoundingClientRect();
+        this.mouseX = event.clientX - containerRect.left;
+        this.mouseY = event.clientY - containerRect.top;
     }
     reportResize(event){
+        console.log(this.boidScapeCanvas.width);
         let canvasDiagonal = Math.sqrt(this.boidScapeCanvas.width**2 + this.boidScapeCanvas.height**2); 
         this.widthOfBoids = canvasDiagonal  / this.widthOfBoidFrac;
         this.heightOfBoids = canvasDiagonal / this.heightOfBoidFrac;        
