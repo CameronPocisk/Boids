@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html>
-    <script>
-    </script>
+    <script src="Boids.js"></script>
     <body>
         
-        <h1>My First Heading</h1>
-        <p>My first paragraph.</p>
+        <h1>Web Heading</h1>
         <canvas id="testForOneDiv">
             Canvas didnt spawn in
         </canvas>
-        <script type="text/javascript" src="Boids.js">
+        <script>
             const canvas = document.getElementById("testForOneDiv");
-            const boidSim = new BoidScape(canvas, 5);
+            const boidSim = new BoidScape(canvas, 2);
             boidSim.StartBoidProgram();
         </script>
 

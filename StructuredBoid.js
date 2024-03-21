@@ -2,7 +2,6 @@
 
 // Globals and html related vars from HTML fncalls
 const canvas = document.getElementById("boidPlane");
-const context = canvas.getContext("2d");
 
 function StartProgram(){
     main(); // Happens here so everthing starts once loaded. Helps with sizing and potential bugs
