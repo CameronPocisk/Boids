@@ -395,7 +395,7 @@ function main()
 {
     SetupCanvas();
 
-    const boidSim = new BoidScape(canvas, 4); // There is data here
+    const boidSim = new BoidScape(canvas, 1); // There is data here
     // const boidSim = new BoidScape(canvas,6,5,150,.05,.15,.03,.05,50,25,"#FFFFFF","#50409A","#964EC2","#272530",true,true,true);
 
     // const boidSim = new BoidScape(

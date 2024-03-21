@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <script src="Boids.js"></script>
-    <body>
+    <body style="background-color: #FF0000; padding: 0; border: 0;">
         
         <h1>Web Heading</h1>
         <canvas id="testForOneDiv" style = "height: 600px; width: 600px; padding: 0; border: 0;">
@@ -13,13 +13,14 @@
         <script>
             const canvas = document.getElementById("testForOneDiv");
             const boidSim = new BoidScape(canvas, 1, 1);
+
             boidSim.StartBoidProgram();
             setInterval(() => {
-                console.log("Boid X:" + boidSim.everyBoid[0].xPosition);
-                console.log("Mouse X:" + boidSim.mouseX);
+                // console.log("Boid X:" + boidSim.everyBoid[0].xPosition);
+                // console.log("Mouse X:" + boidSim.mouseX);
 
-                console.log("Boid Y:" + boidSim.everyBoid[0].yPosition);
-                console.log("Mouse Y:" + boidSim.mouseY);
+                // console.log("Boid Y:" + boidSim.everyBoid[0].yPosition);
+                // console.log("Mouse Y:" + boidSim.mouseY);
                 // console.log(boidSim.mouseY);
             }, (1) * 1000);
         </script>

@@ -56,6 +56,8 @@ class BoidScape{
 
         // General Items
         this.boidScapeCanvas = canvasRef;
+        this.boidScapeCanvas.width = canvasRef.clientWidth; // This was a big bug fix, super annoying but makes sure that 
+        this.boidScapeCanvas.height = canvasRef.clientHeight; // The canvas become the correct size from the html file
         this.boidScapeContext = this.boidScapeCanvas.getContext("2d");
         this.numBoids = numberOfBoids;
         
@@ -70,7 +72,7 @@ class BoidScape{
         //Styling
         this.widthOfBoidFrac = widthOfBoidDenomIn;
         this.heightOfBoidFrac = heightOfBoidDenomIn;
-        this.widthOfBoids = this.boidScapeCanvas.height / this.widthOfBoidFrac;
+        this.widthOfBoids = this.boidScapeCanvas.width / this.widthOfBoidFrac;
         this.heightOfBoids = this.boidScapeCanvas.height / this.heightOfBoidFrac;
         this.boidScapeCanvas.style.backgroundColor = backgroundColorIn
         this.nearStrokeColor = nearStrokeColorIn;
@@ -96,12 +98,17 @@ class BoidScape{
         var containerRect = this.boidScapeCanvas.getBoundingClientRect();
         this.mouseX = event.clientX - containerRect.left;
         this.mouseY = event.clientY - containerRect.top;
+
+        console.log("Mouse X: " + this.mouseX);
+        console.log("MouseY: " + this.mouseY);
+        console.log(this.everyBoid[0].yPosition);
+        // console.log("width: " + this.boidScapeCanvas.width);
+        // console.log("height: " + this.boidScapeCanvas.height);
     }
     reportResize(event){
-        console.log(this.boidScapeCanvas.width);
         let canvasDiagonal = Math.sqrt(this.boidScapeCanvas.width**2 + this.boidScapeCanvas.height**2); 
         this.widthOfBoids = canvasDiagonal  / this.widthOfBoidFrac;
-        this.heightOfBoids = canvasDiagonal / this.heightOfBoidFrac;        
+        this.heightOfBoids = canvasDiagonal / this.heightOfBoidFrac;    
     }
 
     // Calculation stuff / member functions used
