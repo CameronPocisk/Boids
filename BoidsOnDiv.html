@@ -12,17 +12,14 @@
         </canvas>
         <script>
             const canvas = document.getElementById("testForOneDiv");
-            const boidSim = new BoidScape(canvas, 1, 5);
+            const boidSim = new BoidScape(canvas, 5, 1);
 
             boidSim.StartBoidProgram();
-            setInterval(() => {
-                // console.log("Boid X:" + boidSim.everyBoid[0].xPosition);
-                // console.log("Mouse X:" + boidSim.mouseX);
 
-                // console.log("Boid Y:" + boidSim.everyBoid[0].yPosition);
-                // console.log("Mouse Y:" + boidSim.mouseY);
-                // console.log(boidSim.mouseY);
-            }, (1) * 1000);
+            const canvas2 = document.getElementById("secondTestDiv");
+            const boidSim2 = new BoidScape(canvas2, 4, 2);
+
+            boidSim2.StartBoidProgram();
         </script>
 
     </body>

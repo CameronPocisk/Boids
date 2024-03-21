@@ -37,7 +37,7 @@ class BoidScape{
     canvasRef,
     numberOfBoids = 6,
     velocityForBoids = 5,         // Speed of each boid
-    distanceToAvoidMultIn = 150,  // Make Multiple Of Width
+    distanceToAvoidDivisorIn = 10,  // Make Multiple Of Width
     angleChangeTargetingIn =.05,  // How much to turn when following
     angleChangeAvoidingIn = .12,  // How much to turn avoiding
     angleChangeCohesionIn = .03,  // How much to turn to cohere
@@ -63,7 +63,7 @@ class BoidScape{
         
         // Functionality properties
         this.defaultVelocity = velocityForBoids;
-        this.distanceToAvoid = distanceToAvoidMultIn;
+        this.distanceToAvoid = Math.sqrt(this.boidScapeCanvas.width**2 + this.boidScapeCanvas.height**2) / distanceToAvoidDivisorIn;
         this.angleChangeTargeting = angleChangeTargetingIn;
         this.angleChangeAvoiding = angleChangeAvoidingIn;
         this.angleChangeCohesion = angleChangeCohesionIn;
