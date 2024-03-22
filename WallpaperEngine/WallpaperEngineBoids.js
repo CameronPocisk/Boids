@@ -260,15 +260,8 @@ class Boid extends DrawableObject{
         //Find angle using arctan
         let relativeXPosition = coordX - this.xPosition;
         let relativeYPosition = -1*(coordY - this.yPosition);
-
-        if(relativeXPosition == 0){
-            console.log("Div by zero, caused issue?")
-        }
-
         let angleFromBoid = Math.atan(relativeYPosition / relativeXPosition);
         
-        console.log(angleFromBoid);
-
         // Cope with arctan outputs
         if(relativeXPosition < 0){ 
             angleFromBoid += Math.PI;
@@ -354,8 +347,10 @@ class Boid extends DrawableObject{
     Update(boidScapeIn)
     {
         //First calculations
-        this.angleChange = this.angle;
         this.CalculateTrigAngleFactors();
+        // Make sure angle change assignment (w/ modulous) comes first!
+        // Avoids a bug where the angle can never get %'d and moves incorrectly
+        this.angleChange = this.angle;
         
         // Visual for nearby
         this.DrawLineToAllBoids(boidScapeIn.everyBoid, boidScapeIn.boidScapeContext, boidScapeIn.allStrokeColor);
@@ -367,7 +362,7 @@ class Boid extends DrawableObject{
         // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition, distanceToAvoidIn, angleChangeAvoidingIn, boidScapeIn.DistanceBetweenPoints);
         this.MoveAwayFromNearbyBoids(boidScapeIn.angleChangeAvoiding); // Seperation
         this.CoheasionToNearbyAngles(boidScapeIn.angleChangeCohesion); // Allignment 
-        this.angle = this.angleChange; // Angle changes do not affect one another (Needed?)
+        this.angle = this.angleChange; // Angle changes do not affect another changes
 
         // Handle Movement
         this.MoveWithVelocity();
@@ -389,7 +384,7 @@ const canvas = document.getElementById("wallpaperCanvas");
 canvas.width = window.innerWidth; // Should happen onces bc wallpaper engine?
 canvas.height = window.innerHeight; // As in there are no resizes
 
-const wallpaperBoids = new BoidScape(canvas, 2);
+const wallpaperBoids = new BoidScape(canvas, 4);
 wallpaperBoids.StartBoidProgram();
 
 
