@@ -78,6 +78,8 @@ class BoidScape{
 
         // General Items
         this.boidScapeCanvas = canvasRef;
+        this.boidScapeCanvas.width = canvasRef.clientWidth; // This was a big bug fix, super annoying but makes sure that 
+        this.boidScapeCanvas.height = canvasRef.clientHeight; // The canvas become the correct size from the html file
         this.boidScapeContext = this.boidScapeCanvas.getContext("2d");
         this.numBoids = numberOfBoids;
         
@@ -395,7 +397,7 @@ function main()
 {
     SetupCanvas();
 
-    const boidSim = new BoidScape(canvas, 1); // There is data here
+    const boidSim = new BoidScape(canvas, 5); // There is data here
     // const boidSim = new BoidScape(canvas,6,5,150,.05,.15,.03,.05,50,25,"#FFFFFF","#50409A","#964EC2","#272530",true,true,true);
 
     // const boidSim = new BoidScape(

@@ -260,10 +260,17 @@ class Boid extends DrawableObject{
         //Find angle using arctan
         let relativeXPosition = coordX - this.xPosition;
         let relativeYPosition = -1*(coordY - this.yPosition);
+
+        if(relativeXPosition == 0){
+            console.log("Div by zero, caused issue?")
+        }
+
         let angleFromBoid = Math.atan(relativeYPosition / relativeXPosition);
+        
+        console.log(angleFromBoid);
 
         // Cope with arctan outputs
-        if (relativeXPosition < 0){ 
+        if(relativeXPosition < 0){ 
             angleFromBoid += Math.PI;
         }
         else if(relativeYPosition < 0){
@@ -371,3 +378,44 @@ class Boid extends DrawableObject{
     }
 };
 
+
+// function StartProgram(){
+//     main(); // Happens here so everthing starts once loaded. Helps with sizing and potential bugs
+// }
+
+// Make the canvas which resizes to whole wallpaper
+
+const canvas = document.getElementById("wallpaperCanvas");
+canvas.width = window.innerWidth; // Should happen onces bc wallpaper engine?
+canvas.height = window.innerHeight; // As in there are no resizes
+
+const wallpaperBoids = new BoidScape(canvas, 2);
+wallpaperBoids.StartBoidProgram();
+
+
+// Start adding user properties
+window.wallpaperPropertyListener = {
+    applyUserProperties: function(properties) {
+        console.log("Entering wallpaper properties tab")
+        if (properties.customcolor) {
+            // Convert the custom color to 0 - 255 range for CSS usage
+            var customColor = properties.customcolor.value.split(' ');
+            
+            var colorForHtml = '#' + (customColor[0]*255 << 8).toString(16) + 
+            (customColor[1]*255 << 4).toString(16) + (customColor[2]*255).toString(16);
+            console.log(colorForHtml)
+            // customColor = customColor.map(function(c) {
+            //     return Math.ceil(c * 255);
+            // });
+            var customColorAsCSS = 'rgb(' + customColor + ')';
+            // Do something useful with the value here or assign it to a global variable
+        }
+    },
+};
+
+// The first milestone will be to change the color
+//  of the boids in the wallpaper boidscape isntance
+
+
+// Another Goal will be to make sure that the screen 
+// will cover the users wallpaper and the canvas will reflect the values
