@@ -396,9 +396,10 @@ window.wallpaperPropertyListener = {
             // Convert the custom color to 0 - 255 range for CSS usage
             var customColor = properties.customcolor.value.split(' ');
             
-            var colorForHtml = '#' + (customColor[0]*255 << 8).toString(16) + 
+            var colorFromWallp = '#' + (customColor[0]*255 << 8).toString(16) + 
             (customColor[1]*255 << 4).toString(16) + (customColor[2]*255).toString(16);
-            console.log(colorForHtml)
+            console.log(colorFromWallp);
+            wallpaperBoids.boidColor = colorFromWallp;
             // customColor = customColor.map(function(c) {
             //     return Math.ceil(c * 255);
             // });
