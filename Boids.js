@@ -29,21 +29,21 @@ class BoidScape{
     mouseY;
     FrameRateInMsec = (1/60) * 1000;
 
-    nearbyMap = new WeakMap(); // Weakmap should work but inspect it
-    everyBoid = []; // empty dec here?
+    nearbyMap = new WeakMap(); // Weakmap for fast nearby Calcs
+    everyBoid = []; // Store all of the boids
     numBoids;
 
     constructor(
     canvasRef,
     numberOfBoids = 6,
-    velocityForBoids = 5,         // Speed of each boid
+    velocityForBoids = 4,         // Speed of each boid
     distanceToAvoidMultIn = 150,  // Make Multiple Of Width
     angleChangeTargetingIn =.05,  // How much to turn when following
     angleChangeAvoidingIn = .12,  // How much to turn avoiding
     angleChangeCohesionIn = .03,  // How much to turn to cohere
     angleRandomChangeIn = .04,    // How much to turn randomly
-    widthOfBoidDenomIn = 50,      // fraction of canvas width
-    heightOfBoidDenomIn = 25,     // fraction of canvas height
+    widthOfBoidDenomIn = 60,      // fraction of canvas width
+    heightOfBoidDenomIn = 35,     // fraction of canvas height
     nearStrokeColorIn = "#FFFFFF",
     allStrokeColorIn = "#50409A",
     boidColorIn = "#964EC2",
@@ -370,4 +370,3 @@ class Boid extends DrawableObject{
         this.DrawShape(boidScapeIn.boidScapeContext, boidScapeIn.widthOfBoids, boidScapeIn.heightOfBoids, boidScapeIn.boidColor);
     }
 };
-

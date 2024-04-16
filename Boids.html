@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <script src="Boids.js"></script>
+    <body style="padding: 0; border: 0; margin: 0; overflow: hidden;">
+        
+        <!-- <h1>Web Heading</h1> -->
+        <canvas id="testForOneDiv" style = "margin: 0; overflow: hidden;">
+            Canvas didnt spawn in
+        </canvas>
+        <script>
+            // Generate a canvas that will resize
+            const canvas = document.getElementById("testForOneDiv");
+            function ReportWindowSize(){
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener("resize", ReportWindowSize);
+            ReportWindowSize();
+            
+            // Start boids on canvas with canvas and #boids
+            const boidSim = new BoidScape(canvas, 5);
+            boidSim.StartBoidProgram();
+        </script>
+
+    </body>
+</html>
