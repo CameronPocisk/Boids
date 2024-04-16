@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html>
     <script src="Boids.js"></script>
-    <body style="padding: 0; border: 0; margin: 0; overflow: hidden;">
+    <body style="padding: 0; margin: 0; overflow: hidden;">
         
-        <!-- <h1>Web Heading</h1> -->
-        <canvas id="testForOneDiv" style = "margin: 0; overflow: hidden;">
+        <canvas id="boidDiv">
             Canvas didnt spawn in
         </canvas>
         <script>
             // Generate a canvas that will resize
-            const canvas = document.getElementById("testForOneDiv");
+            const canvas = document.getElementById("boidDiv");
             function ReportWindowSize(){
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;

@@ -1,38 +1,10 @@
 class BoidScape{
-    // Should not have statics -- instances should be able to be diff.
-    // Every instance will hold one var with new possibilities
-    // Functionality
-    defaultVelocity;
-    distanceToAvoid;
-    angleChangeTargeting;
-    angleChangeAvoiding;
-    angleChangeCohesion;
-    angleRandomChange;
-    // Style
-    widthOfBoids;
-    heightOfBoids;
-    widthOfBoidFrac;
-    heightOfBoidFrac;
-    nearStrokeColor;
-    allStrokeColor;
-    boidColor;
-    backgroundColor;
-    //Bools for Rools
-    shouldSeperate;
-    shouldAllign;
-    shouldCohere;
-
-    // These are globals from main program
-    boidScapeCanvas;
-    boidScapeContext; 
-    mouseX;
-    mouseY;
     FrameRateInMsec = (1/60) * 1000;
-
     nearbyMap = new WeakMap(); // Weakmap for fast nearby Calcs
     everyBoid = []; // Store all of the boids
     numBoids;
 
+    // Contrsuctor with complete customizatoin
     constructor(
     canvasRef,
     numberOfBoids = 6,
@@ -52,7 +24,7 @@ class BoidScape{
     shouldAllignIn = true,
     shouldCohereIn = true,
     shouldDrawToNearIn = true,
-    shouldDrawToAlleIn = true){
+    shouldDrawToAllIn = true){
 
         // General Items
         this.boidScapeCanvas = canvasRef;
@@ -79,11 +51,14 @@ class BoidScape{
         this.allStrokeColor = allStrokeColorIn;
         this.boidColor = boidColorIn;
 
-        //Bools for Rools = ;
+        // Bools for Rools = no functoinality yet be paitent!
         this.shouldSeperate = shouldSeperateIn;
         this.shouldAllign = shouldAllignIn;
         this.shouldCohere = shouldCohereIn;
+        this.shouldDrawToNear = shouldDrawToNearIn;
+        this.shouldDrawToAll = shouldDrawToAllIn;
 
+        // Event listeners so the program follows the page
         this.reportMousePosition = this.reportMousePosition.bind(this);
         this.boidScapeCanvas.addEventListener('mousemove', this.reportMousePosition);
         
@@ -91,7 +66,7 @@ class BoidScape{
         window.addEventListener('resize', this.reportResize); // This should not be in my thing I think but maybe not
         this.reportResize();
 
-        this.InitBoidList(); // Should I do this?
+        this.InitBoidList();
     }
 
     reportMousePosition(event) {
@@ -113,13 +88,13 @@ class BoidScape{
     }
 
     InitBoidList(){
-        //Reinitialize the boid arr from constants
+        // Reinitialize every boid arr from constants
         this.everyBoid = [];
         for(let i = 0; i < this.numBoids; i++){
             this.everyBoid.push(new Boid
             // (this.RandomNumberBetween(0, this.boidScapeCanvas.width), //Starting X
             // this.RandomNumberBetween(0, this.boidScapeCanvas.height), // Starting Y
-            (this.boidScapeCanvas.width/2, //Starting X
+            (this.boidScapeCanvas.width/2, // Starting X
             this.boidScapeCanvas.height/2, // Starting Y
             this.RandomNumberBetween(0, Math.PI*2), // Starting angle
             this.defaultVelocity)); // Velocity
@@ -127,21 +102,23 @@ class BoidScape{
     }
 
     FillCloseMap(){
-        // Should I try to run this every few frames?
-        // this.nearbyMap = new WeakMap();
+        // make they keys of the map each of the boids
         for(let i = 0; i < this.everyBoid.length; i++){
             this.nearbyMap.set(this.everyBoid[i], []);
         }
         
+        // Itterate though each boid
         for(let curBoidInd = 0; curBoidInd < this.everyBoid.length - 1; curBoidInd++){
             let mainKey = this.everyBoid[curBoidInd];
-            let mainValue = this.nearbyMap.get(mainKey);
+            let mainValue = this.nearbyMap.get(mainKey); // key has a value that stores array of nearby boids
             
             for(let restItr = curBoidInd + 1; restItr < this.everyBoid.length; restItr++){
                 
+                // Get current comparison boid
                 let RelativeBoidKey = this.everyBoid[restItr];
                 let RelativeBoidValue = this.nearbyMap.get(RelativeBoidKey);
                 
+                // Add to both keys if distance is close
                 let distFromBoid = this.DistanceBetweenPoints(mainKey.xPosition, mainKey.yPosition, RelativeBoidKey.xPosition, RelativeBoidKey.yPosition);
                 if(distFromBoid < this.distanceToAvoid){
                     // Could be one line but I this is easier to see for now
@@ -168,22 +145,18 @@ class BoidScape{
         this.SetKeyNearbyToValue(); // Set map elems nearbyLists
 
         for(let i = 0; i < this.everyBoid.length; i++){
-            this.everyBoid[i].Update(this);
+            this.everyBoid[i].Update(this); // Update each boid
         }
     }
 
-    // Call in constructor??
     StartBoidProgram(){
         var frameCount = 0;
         setInterval(() => {
             this.boidScapeContext.clearRect(0, 0, this.boidScapeCanvas.width, this.boidScapeCanvas.height);
-            if(frameCount >= 60){
-                frameCount = 0;
-            }
+            if(frameCount >= 60){ frameCount = 0; }
             frameCount++;
             
             this.UpdateAllBoids();
-            
             // console.log("Ran frame: " + frameCount);
         }, (this.FrameRateInMsec));
     }
@@ -211,7 +184,8 @@ class DrawableObject{
         this.cosAngle = Math.cos(this.angle);
     }
     // Is triangle rn, can I pass in functons?
-    DrawShape(canvasContext, shapeWidth, shapeHeight, shapeColor){ 
+    DrawShape(canvasContext, shapeWidth, shapeHeight, shapeColor){
+        // Calculate points
         let firstXPoint = this.xPosition + (this.cosAngle * shapeHeight * 1/2);
         let firstYPoint = this.yPosition - (this.sinAngle * shapeHeight * 1/2);
         let secondXPoint= this.xPosition + (-1/2 * ((this.cosAngle * shapeHeight) - this.sinAngle * shapeWidth));
@@ -219,8 +193,8 @@ class DrawableObject{
         let thirdXPoint = this.xPosition + (-1/2 * ((this.cosAngle * shapeHeight) + this.sinAngle * shapeWidth));
         let thirdYPoint = this.yPosition - (-1/2 * ((this.sinAngle * shapeHeight) - this.cosAngle * shapeWidth));
 
+        // Draw the shape with canvas
         canvasContext.beginPath();
-
         canvasContext.moveTo(firstXPoint, firstYPoint);
         canvasContext.lineTo(secondXPoint, secondYPoint);
         canvasContext.lineTo(thirdXPoint, thirdYPoint);
@@ -233,7 +207,7 @@ class Boid extends DrawableObject{
 
     velocity;
     nearbyBoids = [];
-    angleChange; // needed?
+    angleChange;
 
     // Calls base constr with inps as well
     constructor(xPosInp, yPosInp, angleInp, velocityInp) {
@@ -256,8 +230,8 @@ class Boid extends DrawableObject{
         this.angleChange += randomFn(-1 * andgleDiff, andgleDiff);
     }
 
-    MoveToCoords(coordX, coordY, angleDiff){ // make into  helpers
-        //Find angle using arctan
+    MoveToCoords(coordX, coordY, angleDiff){ // Make into  helpers
+        // Find angle using arctan
         let relativeXPosition = coordX - this.xPosition;
         let relativeYPosition = -1*(coordY - this.yPosition);
         let angleFromBoid = Math.atan(relativeYPosition / relativeXPosition);
@@ -333,7 +307,7 @@ class Boid extends DrawableObject{
 
     CoheasionToNearbyAngles(angleDiff){ // Change this function, maybe to get further away boids
         if(this.nearbyBoids.length == 0){
-            return; // early exit
+            return; // Early exit
         }
         var nearbyBoidAngleAvg = 0; // Get the average
         for(let i = 0; i < this.nearbyBoids.length; i++){
@@ -346,7 +320,7 @@ class Boid extends DrawableObject{
 
     Update(boidScapeIn)
     {
-        //First calculations
+        // First calculations
         this.angleChange = this.angle;
         this.CalculateTrigAngleFactors();
         
