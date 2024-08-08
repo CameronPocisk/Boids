@@ -334,6 +334,8 @@ class Boid extends DrawableObject{
         // this.MoveAwayFromObjectIfClose(mouseXPosition, mouseYPosition, distanceToAvoidIn, angleChangeAvoidingIn, boidScapeIn.DistanceBetweenPoints);
         this.MoveAwayFromNearbyBoids(boidScapeIn.angleChangeAvoiding); // Seperation
         this.CoheasionToNearbyAngles(boidScapeIn.angleChangeCohesion); // Allignment 
+
+        this.angleChange %= Math.PI * 2;
         this.angle = this.angleChange; // Angle changes do not affect one another (Needed?)
 
         // Handle Movement

@@ -350,6 +350,7 @@ class Boid extends DrawableObject{
         this.CalculateTrigAngleFactors();
         // Make sure angle change assignment (w/ modulous) comes first!
         // Avoids a bug where the angle can never get %'d and moves incorrectly
+        this.angleChange %= Math.PI * 2;
         this.angleChange = this.angle;
         
         // Visual for nearby
